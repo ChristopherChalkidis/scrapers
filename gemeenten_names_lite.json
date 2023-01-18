@@ -1,0 +1,110 @@
+{
+    "Aa en Hunze": {
+        "Funda-Gemeenten_sale": "/koop/gemeente-aa-en-hunze/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-aa-en-hunze/"
+    },
+    "Aalburg": {
+        "Funda-Gemeenten_sale": "/koop/gemeente-aalburg/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-aalburg/"
+    },
+    "Aalsmeer": {
+        "Funda_sale": "/koop/aalsmeer/",
+        "Funda_rent": "/huur/aalsmeer/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-aalsmeer/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-aalsmeer/"
+    },
+    "Aalten": {
+        "Funda_sale": "/koop/aalten/",
+        "Funda_rent": "/huur/aalten/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-aalten/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-aalten/"
+    },
+    "Achtkarspelen": {
+        "Funda-Gemeenten_sale": "/koop/gemeente-achtkarspelen/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-achtkarspelen/"
+    },
+    "Alblasserdam": {
+        "Funda_sale": "/koop/alblasserdam/",
+        "Funda_rent": "/huur/alblasserdam/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-alblasserdam/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-alblasserdam/"
+    },
+    "Albrandswaard": {
+        "Funda-Gemeenten_sale": "/koop/gemeente-albrandswaard/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-albrandswaard/"
+    },
+    "Alkmaar": {
+        "Funda_sale": "/koop/alkmaar/",
+        "Funda_rent": "/huur/alkmaar/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-alkmaar/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-alkmaar/"
+    },
+    "Almelo": {
+        "Funda_sale": "/koop/almelo/",
+        "Funda_rent": "/huur/almelo/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-almelo/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-almelo/"
+    },
+    "Almere": {
+        "Funda_sale": "/koop/almere/",
+        "Funda_rent": "/huur/almere/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-almere/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-almere/"
+    },
+    "Alphen aan den Rijn": {
+        "Funda_sale": "/koop/alphen-aan-den-rijn/",
+        "Funda_rent": "/huur/alphen-aan-den-rijn/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-alphen-aan-den-rijn/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-alphen-aan-den-rijn/"
+    },
+    "Alphen-Chaam": {
+        "Funda-Gemeenten_sale": "/koop/gemeente-alphen-chaam/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-alphen-chaam/"
+    },
+    "Ameland": {
+        "Funda-Gemeenten_sale": "/koop/gemeente-ameland/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-ameland/"
+    },
+    "Amersfoort": {
+        "Funda_sale": "/koop/amersfoort/",
+        "Funda_rent": "/huur/amersfoort/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-amersfoort/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-amersfoort/"
+    },
+    "Amstelveen": {
+        "Funda_sale": "/koop/amstelveen/",
+        "Funda_rent": "/huur/amstelveen/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-amstelveen/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-amstelveen/"
+    },
+    "Amsterdam": {
+        "Funda_sale": "/koop/amsterdam/",
+        "Funda_rent": "/huur/amsterdam/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-amsterdam/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-amsterdam/"
+    },
+    "Apeldoorn": {
+        "Funda_sale": "/koop/apeldoorn/",
+        "Funda_rent": "/huur/apeldoorn/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-apeldoorn/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-apeldoorn/"
+    },
+    "Appingedam": {
+        "Funda_sale": "/koop/appingedam/",
+        "Funda_rent": "/huur/appingedam/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-appingedam/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-appingedam/"
+    },
+    "Arnhem": {
+        "Funda_sale": "/koop/arnhem/",
+        "Funda_rent": "/huur/arnhem/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-arnhem/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-arnhem/"
+    },
+    "Assen": {
+        "Funda_sale": "/koop/assen/",
+        "Funda_rent": "/huur/assen/",
+        "Funda-Gemeenten_sale": "/koop/gemeente-assen/",
+        "Funda-Gemeenten_rent": "/huur/gemeente-assen/"
+    }
+}
