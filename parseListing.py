@@ -9,7 +9,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 mainDetails = {} #Holds information about the listing
 detailsNeeded ={"Address","Rental price", "Deposit", "Rental Agreement", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories"}
 
-URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #URL for testing
+URL = "https://www.funda.nl/koop/amstelveen/appartement-42084726-amsterdamseweg-514-a/?navigateSource=resultlist"
+#URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #URL for testing
 page = requests.get(URL)
 
 def getPageSource(URL):
@@ -33,7 +34,8 @@ def getPageSource(URL):
 
 #TODO Get images for listing (3?)
 #TODO Read-in listings json
-#TODO Test with list of listings
+#COMPLETED Test with list of listings - Doesn't work if in Dutch
+#TODO Alter detailsNeeded to include Dutch names (Translate to English?)
 
 source = getPageSource(URL)
 soup = BeautifulSoup(source, "html.parser")
@@ -121,6 +123,7 @@ removeNames(features, details)
 
 #Adds feature with detail entry to mainDetails
 for f, d in zip(features, details):
+    print(f"Feature: {f}: {d}")
     mainDetails[f] = d
 
 #List of unneeded entries to remove
