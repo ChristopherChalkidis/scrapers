@@ -1,10 +1,13 @@
 import json
+import re
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+mainDetails = {} #Holds information about the listing
+detailsNeeded ={"Address","Rental price", "Deposit", "Rental Agreement", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories"}
 
 URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #URL for testing
 page = requests.get(URL)
@@ -20,28 +23,64 @@ def getPageSource(URL):
     driver.quit()
     return page_source
 
+#TODO Better commenting
+#TODO Get images for listing (3?)
+#TODO Readin listings json
+#TODO Test with list of listings
+
 source = getPageSource(URL)
 soup = BeautifulSoup(source, "html.parser")
-mainStats = soup.find(class_="object-header__details")
-features = soup.find(class_="object-kenmerken")
-""" print(mainStats.prettify())
-print(features.prettify()) """
+featureBody = soup.find(class_="object-kenmerken-body")
 
-details = mainStats.find_all("div")
+mainDetails["Address"] = soup.find(class_="fd-m-top-none").text.strip()
 
-# TODO isolate header details from code
-for detail in details:
-    print(detail.prettify())
+def removeHTML(str):
+    return re.sub("([\(\[]).*?([\)\]])", "", str)
 
-""" address = soup.find(class_="fd-m-top-none").text.strip()
-stats = soup.find(class_="kenmerken-highlighted").text.strip().split(" ")
-#print(stats)
+#Get address
+details = soup.find_all(class_="kenmerken-highlighted__value")
 
-for info in stats :
-    j = json.loads(info)
-    print(j)
+def removeNames(features, details):
+    for feature in features:
+        if feature in details:
+            details.remove(feature)
+    return details
 
-print(address)
+def getDetails(items):
+    details = []
+    for detail in items:
+        det = detail.text.strip().split("\n")
+        for d in det:
+            details.append(removeHTML(d))
 
-def createJSON(): """
+    strippedDetails = []
+    [strippedDetails.append(x) for x in details if x not in strippedDetails]
+    return strippedDetails
 
+def getFeatures(featName):
+    features = []
+    for feature in featName:
+        features.append(removeHTML(feature.text.strip()))
+    return features
+
+def removeUnneeded(info):
+    for key in info:
+        del mainDetails[key]
+
+features = getFeatures(featureBody.find_all("dt"))
+details = getDetails(featureBody.find_all("dd"))
+
+removeNames(features, details)
+
+for f, d in zip(features, details):
+    mainDetails[f] = d
+
+toRemove = [key for key in mainDetails if key not in detailsNeeded]
+removeUnneeded(toRemove)
+
+jsonOutput = json.dumps(mainDetails, indent=4)
+
+with open("listing.json", "w") as outfile:
+    outfile.write(jsonOutput)
+
+print(jsonOutput)
