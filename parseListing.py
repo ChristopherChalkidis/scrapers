@@ -160,12 +160,9 @@ for url in URLlist:
 
     removeUnneeded(toRemove)
 
-    allListings.append(json.dumps(mainDetails, indent=4))
+    allListings.append(mainDetails)
 
-#Writes mainDetails as json to a file
+#Writes allListings as json to a file
 #Currently appends, this could be changed to a new file for each day
-#TODO proper formatting for mutliple dictionaries as json
 with open("listing.json", "a") as outfile:
-    outfile.write(allListings)
-
-#print(jsonOutput)
+    outfile.write(json.dumps(allListings, indent=4))
