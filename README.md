@@ -2,11 +2,11 @@
 
 
 ## A. Getting started
-- visit https://github.com/techadvisory/scrapper and click on the "<>Code" button and copy the URL.
-- After that, open a gitbus terminal and write git clone url, where url = the url you copied from github.
-
-
-
+This section helps you get started.
+Clone the repo
+```
+git clone https://github.com/techadvisory/scrapper.git
+```
 ## B. Running instrustion
 Before running the script you need to do the following steps:
 - step 1 (Install libraries: bs4, selenium, webdriver_manager  )
