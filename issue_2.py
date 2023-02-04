@@ -3,6 +3,7 @@ import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 import config
@@ -71,6 +72,8 @@ def getPageSource(link):
         :param link: Link to web page.
         :return: page_source as a string
     """
+    options = Options()
+    options.add_argument("headless")
     s = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=s)
     #driver.maximize_window()
@@ -127,10 +130,10 @@ def main():
                 list_of_listing_links.append(link)  # Getting the listing links.
         else:
             print("No listings for - " + gemeenten)
-    set_of_listing_links = dict.fromkeys(list_of_listing_links)  # Removing duplicate listing links.
+    #set_of_listing_links = dict.fromkeys(list_of_listing_links)  # Removing duplicate listing links.
     # Displaying the listing links on the console.
-    print(len(set_of_listing_links))
-    for link in set_of_listing_links:
+    print(len(list_of_listing_links))
+    for link in list_of_listing_links:
         print(link)
 
 
