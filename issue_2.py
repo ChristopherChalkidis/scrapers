@@ -73,7 +73,7 @@ def getPageSource(link):
     """
     s = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=s)
-    driver.maximize_window()
+    #driver.maximize_window()
     driver.get(link)
     page_source = driver.page_source
     driver.quit()
