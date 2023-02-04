@@ -72,6 +72,8 @@ def getPageSource(link):
         :param link: Link to web page.
         :return: page_source as a string
     """
+
+    #TODO No results found when browser not displayed
     options = Options()
     options.add_argument("headless")
     s = Service(ChromeDriverManager().install())
