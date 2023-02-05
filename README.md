@@ -7,39 +7,51 @@ Clone the repo
 ```
 git clone https://github.com/techadvisory/scrapper.git
 ```
-## B. Running instrustion
+## B. How to Run
 Before running the script you need to do the following steps:
-- step 1 (Install libraries: bs4, selenium, webdriver_manager  )
-- step 2 (replace the word "other" in Issue_1.py line 24 with the path that the scrapper folder is in(for me it's gemeenten_file = open(cfg["C://Users//xxx//Documents//git//scrapper"] and      do the same in config_adder.py lines 12, 14, 15, 16)
-- Step 3 (Run config_adder.py and then Issue_1.py)
+- step 1 (Install libraries: bs4, selenium, webdriver_manager)
+- step 2 (Edit the config_adder.py with the location of gemeenten.txt on line 16, gemeenten_names.json on line 18, gemeenten_links.json on line 20.)
+- Step 3 (Run config_adder.py. This will add a new configurations.ini file to your project).
+- Step 4 (Now you can run any of the Issue_*.py files.
+
 
 ### Running Python modules:
+The Issue_1.py file was created with the intention of validating the urls of each municipality. This was done by creating a new url for each municipality and then fetching the results using selenuim. If the webpage returned contained "We kunnen", that means that the url is invalid. The results are printed on the console.
 To run `Issue_1.py` run:
 ```
 python Issue_1.py
 ```
 
-To run `Issue_2.py` and save the results in a sqlite db in the current directory run:
+The Issue_2.py file was created with the intention of iterating through all the municipalities in gemeenten.txt and then printing out all the listing URLs available on the webpage.
+To run `Issue_2.py` run:
 ```
 python Issue_2.py
 ```
-Same for all the scripts
 
-## File information
+The Issue_3.py file is an extension of Issue_2.py. The only difference is that all the listing URLs are saved in a JSON file. The JSON file with the listings has been named gemeenten_links.json and a lite version of the JSON file has been created and is called gemeenten_links_lite.json.
+To run `Issue_3.py` run:
+```
+python Issue_3.py
+```
 
-* `config_adder` - generates `configurations.ini`
-* `Issue_1` - The goal is to use the attached file and verify if the gemeenten (i.e. municipalities) are valid.
-    Base URL: https://www.funda.nl/koop/heerhugowaard/1-dag/  replace heerhugowaard with all the entries in the file and verify of the response is 200 
+The Issue_5.py file was written with the intention of converting the gemeenten.txt file to a JSON file. The script will run through all the 393 municipalities in the gemeenten.txt file and then create a JSON file with all the valid URLs. This JSON file is titiled gemeenten_names.json. A lite version of the file with a few gemeentens has been created and is called gemeenten_names_lite.json.
+To run `Issue_5.py` run:
+```
+python Issue_5.py
+```
+The config_adder.py file was created with the intention of introducing configurations to allow multiple developers to work on this. You need to edit the file as detailed in the "How to Run" section of this readme.
+To run `config_adder.py` run:
+```
+python config_adder.py
+```
 
-* `Issue_2` -  Creates a python script that:
-     iterates over the list of 393 municipalities
-     loads the page (e.g. https://www.funda.nl/koop/heerhugowaard/1-dag/ )
-     fetches all the URLs that start with https://www.funda.nl/koop/heerhugowaard …
+## Other Files in the Repository
+* `gemeenten.txt` - Contains all the municipalties that need to be scrapped. 
 
-* `Issue_3` -  scrapes to: save new URLs in JSON
+* `gemeenten_names.json` - Contains all the municipalties that need to be scrapped in JSON format as links.
+* `gemeenten_names_lite.json` - Lite version of ^ with only 20 municipalities.
 
-* `Issue_5` - Converts municipality into a json file #5
+* `gemeenten_links.json` - Contains all the links that have been scrapped.
+* `gemeenten_links_lite.json` - Lite version of ^ with links for 20 municipalities.
 
-* `gemeenten_names.json` - Contains Gemeenten_names according to places in Json format
-
-* `gemternten_links_20.json` - Contains gemternten links in Json format
+* `gemternten_links_20.json` - ?
