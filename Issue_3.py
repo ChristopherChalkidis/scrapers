@@ -105,8 +105,11 @@ def getListOfGemeenten(gemeenten_list):
             list_of_gemeenten.append(fcc_data[gemeenten]['Funda-Gemeenten_sale'])
             list_of_gemeenten.append(fcc_data[gemeenten]['Funda-Gemeenten_rent'])
         except:
-            list_of_gemeenten.append(fcc_data[gemeenten]['Funda-Gemeenten_sale'])
-            list_of_gemeenten.append(fcc_data[gemeenten]['Funda-Gemeenten_rent'])
+            try:
+                list_of_gemeenten.append(fcc_data[gemeenten]['Funda-Gemeenten_sale'])
+                list_of_gemeenten.append(fcc_data[gemeenten]['Funda-Gemeenten_rent'])
+            except:
+                print("No link for the following gemeenten - ", gemeenten)
     return list_of_gemeenten
 
 def writeToJsonFile(set_of_listing_links):
