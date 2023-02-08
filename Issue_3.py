@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
+from selenium_stealth import stealth
 
 import config
 
@@ -69,14 +70,26 @@ def getPageSource(link):
         :param link: Link to web page.
         :return: page_source as a string
     """
+    options = Options()
+    # Enables faster scraping
+    options.add_argument("--headless")  # Don't show browser
+    # images aren't rendered
+    options.add_argument("--blink-settings=imagesEnabled=false")
+    # Starts driver for Chrome once before get the pages
     s = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=s)
-    driver.maximize_window()
+    driver = webdriver.Chrome(service=s, options=options)
+    # Mimics real user so captcha isn't triggered
+    stealth(driver,
+            user_agent="Chrome/109.0.0.0 Safari/537.36",
+            languages=["en-US", "en"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
+            fix_hairline=True,
+            )
     driver.get(link)
-    driver.implicitly_wait(10)
     page_source = driver.page_source
-
-    driver.quit()
     return page_source
 
 
