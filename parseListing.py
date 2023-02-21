@@ -1,30 +1,46 @@
 import json
 import re
 import requests
+import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime
 
 mainDetails = {} #Holds information about the listing
 mainDetails["photos"] = [] #Holds list of photo srcs
-detailsNeeded =["photos", "Address","Rental price", "Deposit", "Rental Agreement", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories"]
-detailsNeededDutch = ["photos", "Address", "Huurprijs", "Waarborgsom", "Huurovereenkomst", "Soort woonhuis", "Wonen", "Slaapkamers", "Aantal badkamers", "Aantal woonlagen"]
+detailsNeeded =["photos", "Address","Rental price", "Deposit", "Rental Agreement", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories", "URL", "title", "postal_code", "Asking price", "Listed since", "Year of construction", "Number of rooms", "Rental agreement"]
+detailsNeededDutch = ["photos", "Address", "Huurprijs", "Waarborgsom", "Huurovereenkomst", "Soort woonhuis", "Wonen", "Slaapkamers", "Aantal badkamers", "Aantal woonlagen", "URL", "title", "postal_code", "Vraagprijs", "Aangeboden sinds", "Bouwjaar", "Aantal kamers", "Huurovereenkomst"]
 
 #URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 #URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
-
-
-
-
 
 
 #COMPLETE Get images for listing (3?)
 #COMPLETE Read-in listings json
 #COMPLETE Test with list of listings - Doesn't work if in Dutch
 #COMPLETE Alter detailsNeeded to include Dutch names (Translate to English?)
+#COMPLETE Needs debuging, etails are stored along with the wrong feats
+#Maybe check if english or dutch by url
+#Maybe store both english and dutch versions at the same time
+#Edit config_adder so it creates a folder for the json files
+#COMPLETE Remove all listings and create a json for each page
+#COMPLETE URLs with variable references eg ?navigateSourve=resultlist return an error when creating a file. Should strip those refs
+"""
+#COMPLETE
+Some listings fail to collect data. eg https://www.funda.nl/koop/verkocht/apeldoorn/appartement-42083357-ravelijn-350/
+It seems that some pages have more than one div of class object-kenmerken-body
+Those pages are the ones that are no longer available
+"""
+#COMPLETE Funda properties that no longer exist, crush the scrapper, need to check if available or continue
 
-
+"""
+#COMPLETE
+Rent deposit data fetch fails
+Must create a function that gets a url and returns "dutch or en" and "huur or koop"
+If the page is about rent, then get the deposit manually and insert it in deposit list counterpart of Waarborgsom of the feature list
+"""
 
 # *** Methods *** #
 def getPageSource(URL):
@@ -72,6 +88,7 @@ def removeNames(features, details):
             details.remove(feature)
     return details
 
+
 def getDetails(items):
     """Processes each detail to remove HTML and duplicates
     
@@ -85,11 +102,14 @@ def getDetails(items):
     for detail in items:
         det = detail.text.strip().split("\n")
         for d in det:
-            details.append(removeHTML(d))
+            if d.__contains__("wordt berekend door de") or d == "" :
+                continue
+            else:
+                details.append(removeHTML(d))
 
     strippedDetails = []
     [strippedDetails.append(x) for x in details if x not in strippedDetails]
-    return strippedDetails
+    return details
 
 def getFeatures(featName):
     """Removes the HTML and leading and trailing whitespace for each feature name.
@@ -102,7 +122,10 @@ def getFeatures(featName):
     """
     features = []
     for feature in featName:
-        features.append(removeHTML(feature.text.strip()))
+        if feature.text.__contains__("Gebruiksoppervlakten"):
+            continue
+        else:
+            features.append(removeHTML(feature.text.strip()))
     return features
 
 def removeUnneeded(info):
@@ -121,29 +144,81 @@ def addPhotos(images):
         if"https://cloud.funda.nl/valentina_media" in image["src"]:
             mainDetails["photos"].append(image["src"])
 
-data = open("gemternten_links_20.json")
+def stripURL(url):
+    #Removes the variable reference from the URL
+    for index, char in enumerate(url):
+        if char == "?":
+            return url[:index]
+    return url
+
+def checkEDRS(url):
+    """Checks the language of the page and if its about sale or rent
+
+    Args:
+        URL: Just the full url of a page
+
+    Returns:
+     A list with 2 items:  [0] for en or nl, [1] for sale or koop
+    """
+    dt = url.split("/")
+    info = []
+    if "en" in dt:
+        info.append("en")
+    else:
+        info.append("nl")
+    if "koop" in dt:
+        info.append("koop")
+    elif "huur" in dt:
+        info.append("huur")
+    return info
+
+data = open("gemeenten_links_lite.json")
 URLlist = json.load(data)
 allListings = []
 for url in URLlist:
     #print(f"URL: {url}")
-    #print(url['20230117-151731'])
-
+    
     page = requests.get(url['20230117-151731'])
 
     source = getPageSource(url['20230117-151731'])
     soup = BeautifulSoup(source, "html.parser")
     featureBody = soup.find(class_="object-kenmerken-body")
+    mainDetails ={}
 
+    #Checks if the property is still available
+    warning = soup.find(class_="notification-message-content")
+    warning = str(warning)
+    if warning.__contains__("Woning niet gevonden"):
+        continue
+        
     #Enters address as first entry for listing
     mainDetails["Address"] = soup.find(class_="fd-m-top-none").text.strip()
+    mainDetails["URL"] = url['20230117-151731']
+    mainDetails["title"] = soup.find(class_="object-header__title").text.strip()
+    mainDetails["postal_code"] = soup.find(class_="object-header__subtitle fd-color-dark-3").text.strip()
 
     #Gets list of all feature names in the HTML
     features = getFeatures(featureBody.find_all("dt"))
+
+    #If the property is rented or sold, then skip
+    if "Verhuurdatum"in features:
+        continue
+    if "Verkoopdatum" in features:
+        continue
+
     #Gets list of all details in the HTML
-    details = getDetails(featureBody.find_all("dd"))
+    details = getDetails(featureBody.find_all("dd", class_="fd-align-items-center"))
+    
     #Get list of images
     photos = soup.find_all("img", class_="w-full")
+    mainDetails["photos"] = []
     addPhotos(photos)
+
+    #Fetches the rental deposit and inserts it in the correct spot of the details list
+    if checkEDRS(url['20230117-151731'])[1]  == "huur":
+        depo = soup.find(class_="object-kenmerken-group-list")
+        depo2 = depo.find("dd").text.strip()
+        details.insert(features.index("Waarborgsom"), depo2)
 
     removeNames(features, details)
 
@@ -159,10 +234,22 @@ for url in URLlist:
         toRemove = [key for key in mainDetails if key not in detailsNeededDutch]
 
     removeUnneeded(toRemove)
+    #allListings.append(mainDetails)
 
-    allListings.append(mainDetails)
+    #Creates the name of the file
+    url_name = str(url["20230117-151731"]).replace("https://", "")
+    url_name = url_name.replace("/", "%2F")
+    url_name = stripURL(url_name)
+    x = time.time()
+    date_time = datetime.fromtimestamp(x)
+    str_date_time = date_time.strftime("%d-%m-%Y_%H-%M-%S")
+    json_name = "listings/" +str_date_time + "_" + url_name + ".json"
+
+    with open(json_name, "a") as outfile:
+        outfile.write(json.dumps(mainDetails, indent=4))
+
 
 #Writes allListings as json to a file
 #Currently appends, this could be changed to a new file for each day
-with open("listing.json", "a") as outfile:
-    outfile.write(json.dumps(allListings, indent=4))
+#with open("listing.json", "a") as outfile:
+    #outfile.write(json.dumps(allListings, indent=4))
