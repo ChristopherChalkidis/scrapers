@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # This bash script adds to crontab a task to run a python script[$1] twice a day [at 00:00 and 12:00].
-# The python script [$1] has to be in the same dir as this bash script.
+# The python script [$1] has to be in the same dir as this bash script, and run the write python virtual env.
 # A log file [cron.log] is added in the same directory.
 # should be run once as 
 # bash schedule.sh python_script.py
