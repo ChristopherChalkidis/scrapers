@@ -1,0 +1,50 @@
+{
+    "Aa en Hunze": {},
+    "Aalburg": {},
+    "Aalsmeer": {
+        "Pararius_Apartment": "/apartments/aalsmeer/"
+    },
+    "Aalten": {
+        "Pararius_Apartment": "/apartments/aalten/"
+    },
+    "Achtkarspelen": {},
+    "Alblasserdam": {
+        "Pararius_Apartment": "/apartments/alblasserdam/"
+    },
+    "Albrandswaard": {},
+    "Alkmaar": {
+        "Pararius_Apartment": "/apartments/alkmaar/"
+    },
+    "Almelo": {
+        "Pararius_Apartment": "/apartments/almelo/"
+    },
+    "Almere": {
+        "Pararius_Apartment": "/apartments/almere/"
+    },
+    "Alphen aan den Rijn": {
+        "Pararius_Apartment": "/apartments/alphen-aan-den-rijn/"
+    },
+    "Alphen-Chaam": {},
+    "Ameland": {},
+    "Amersfoort": {
+        "Pararius_Apartment": "/apartments/amersfoort/"
+    },
+    "Amstelveen": {
+        "Pararius_Apartment": "/apartments/amstelveen/"
+    },
+    "Amsterdam": {
+        "Pararius_Apartment": "/apartments/amsterdam/"
+    },
+    "Apeldoorn": {
+        "Pararius_Apartment": "/apartments/apeldoorn/"
+    },
+    "Appingedam": {
+        "Pararius_Apartment": "/apartments/appingedam/"
+    },
+    "Arnhem": {
+        "Pararius_Apartment": "/apartments/arnhem/"
+    },
+    "Assen": {
+        "Pararius_Apartment": "/apartments/assen/"
+    }
+}

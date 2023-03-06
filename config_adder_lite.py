@@ -19,6 +19,11 @@ config_file.set("Other", "gemeenten-json-location", "gemeenten_names_lite.json")
 # gemeenten-links-json-location -> Json file containing the links that were scrapped in the last 24 hours.
 config_file.set("Other", "gemeenten-links-json-location", "gemeenten_links_lite.json")
 
+config_file.set("Other", "gemeenten-json-names-pararius", "gemeenten_names_pararius_lite.json")
+
+config_file.set("Other", "gemeenten-json-links-pararius", "gemeenten_links_pararius_lite.json")
+
+
 # SAVE CONFIG FILE
 with open(r"configurations.ini", 'w') as configfileObj:
     config_file.write(configfileObj)
