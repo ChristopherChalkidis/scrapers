@@ -8,6 +8,11 @@
 # or
 # chmod +x schedule.sh; ./schedule.sh
 
+# Next step:
+# 1. windows
+# 2. make sure this script works correctly. 
+# in particular that messages "successfuly added or removed" are matching reality.
+
 #---------------------
 username=$USER
 currentdir=$(pwd)
