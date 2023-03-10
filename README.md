@@ -45,6 +45,27 @@ To run `config_adder.py` run:
 python config_adder.py
 ```
 
+### Schedule to Run The Scrapper X Times Every Day
+This bash script [schedule.sh](schedule.sh) can be used to schedule the run of any python script 1 to 4 times a day.
+
+To use it
+- Go to the terminal
+- Make sure that you're in the right virtual environment which has installed all the required packages to run the python script.
+- Run command 
+
+   ```
+   bash schedule.sh
+   ```
+   or 
+   ```
+   chmod +x schedule.sh
+   ./schedule.sh
+   ```
+- Follow the interactive instructions.
+
+If you later want to modify or stop the scheduled run of a python script, follow the same steps above and choose the corresponding option to Reschedule or Stop.  
+
+
 ## Other Files in the Repository
 * `gemeenten.txt` - Contains all the municipalties that need to be scrapped. 
 
