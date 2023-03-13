@@ -9,9 +9,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 
 mainDetails = {} #Holds information about the listing
-mainDetails["photos"] = [] #Holds list of photo srcs
-detailsNeeded =["photos", "Address","Rental price", "Deposit", "Rental Agreement", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories", "URL", "title", "postal_code", "Asking price", "Listed since", "Year of construction", "Number of rooms", "Rental agreement"]
-detailsNeededDutch = ["photos", "Address", "Huurprijs", "Waarborgsom", "Huurovereenkomst", "Soort woonhuis", "Wonen", "Slaapkamers", "Aantal badkamers", "Aantal woonlagen", "URL", "title", "postal_code", "Vraagprijs", "Aangeboden sinds", "Bouwjaar", "Aantal kamers", "Huurovereenkomst"]
+mainDetails["Photos"] = [] #Holds list of photo srcs
+detailsNeeded =["Photos", "Address","Rental price", "Deposit", "Rental Agreement", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories", "URL", "Title", "Postal_code", "Asking price", "Listed since", "Year of construction", "Number of rooms", "Rental agreement", "Construction period"]
+detailsNeededDutch = ["Photos", "Address", "Huurprijs", "Waarborgsom", "Huurovereenkomst", "Soort woonhuis", "Wonen", "Slaapkamers", "Aantal badkamers", "Aantal woonlagen", "URL", "Title", "Postal_code", "Vraagprijs", "Aangeboden sinds", "Bouwjaar", "Aantal kamers", "Huurovereenkomst", "Bouwperiode"]
 
 #URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 #URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
@@ -104,6 +104,8 @@ def getDetails(items):
         for d in det:
             if d.__contains__("wordt berekend door de") or d == "" :
                 continue
+            if d.__contains__("is calculated by dividing") or d == "" :
+                continue
             else:
                 details.append(removeHTML(d))
 
@@ -142,7 +144,7 @@ def removeUnneeded(info):
 def addPhotos(images):
     for image in images:
         if"https://cloud.funda.nl/valentina_media" in image["src"]:
-            mainDetails["photos"].append(image["src"])
+            mainDetails["Photos"].append(image["src"])
 
 def stripURL(url):
     #Removes the variable reference from the URL
@@ -172,6 +174,15 @@ def checkEDRS(url):
         info.append("huur")
     return info
 
+def norm_dict(dict):
+    #Capitalizes and replaces spaces with underscores in a dictionary's keys
+    new_dict = {}
+    for item in dict:
+        new_item = item.replace(" ", "_")
+        new_item = new_item.capitalize()
+        new_dict[new_item] = dict[item]
+    return new_dict
+
 data = open("gemeenten_links_lite.json")
 URLlist = json.load(data)
 allListings = []
@@ -190,12 +201,12 @@ for url in URLlist:
     warning = str(warning)
     if warning.__contains__("Woning niet gevonden"):
         continue
-        
+
     #Enters address as first entry for listing
     mainDetails["Address"] = soup.find(class_="fd-m-top-none").text.strip()
     mainDetails["URL"] = url['20230117-151731']
-    mainDetails["title"] = soup.find(class_="object-header__title").text.strip()
-    mainDetails["postal_code"] = soup.find(class_="object-header__subtitle fd-color-dark-3").text.strip()
+    mainDetails["Title"] = soup.find(class_="object-header__title").text.strip()
+    mainDetails["Postal_code"] = soup.find(class_="object-header__subtitle fd-color-dark-3").text.strip()
 
     #Gets list of all feature names in the HTML
     features = getFeatures(featureBody.find_all("dt"))
@@ -211,14 +222,18 @@ for url in URLlist:
     
     #Get list of images
     photos = soup.find_all("img", class_="w-full")
-    mainDetails["photos"] = []
+    mainDetails["Photos"] = []
     addPhotos(photos)
 
     #Fetches the rental deposit and inserts it in the correct spot of the details list
     if checkEDRS(url['20230117-151731'])[1]  == "huur":
         depo = soup.find(class_="object-kenmerken-group-list")
         depo2 = depo.find("dd").text.strip()
-        details.insert(features.index("Waarborgsom"), depo2)
+        if checkEDRS(url['20230117-151731'])[0] == "nl":
+            rr = "Waarborgsom"
+        else:
+            rr = "Deposit"
+        details.insert(features.index(rr), depo2)
 
     removeNames(features, details)
 
@@ -228,14 +243,15 @@ for url in URLlist:
         mainDetails[f] = d
 
     #Checks if listing is in English or Dutch
-    if features[0] == "Rental price":
+    if checkEDRS(url['20230117-151731'])[0] == "en":
         toRemove = [key for key in mainDetails if key not in detailsNeeded]
     else:
         toRemove = [key for key in mainDetails if key not in detailsNeededDutch]
 
     removeUnneeded(toRemove)
     #allListings.append(mainDetails)
-
+    mainDetails = norm_dict(mainDetails)
+    print(mainDetails)
     #Creates the name of the file
     url_name = str(url["20230117-151731"]).replace("https://", "")
     url_name = url_name.replace("/", "%2F")
