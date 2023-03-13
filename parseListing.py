@@ -251,7 +251,7 @@ for url in URLlist:
     removeUnneeded(toRemove)
     #allListings.append(mainDetails)
     mainDetails = norm_dict(mainDetails)
-    print(mainDetails)
+
     #Creates the name of the file
     url_name = str(url["20230117-151731"]).replace("https://", "")
     url_name = url_name.replace("/", "%2F")
