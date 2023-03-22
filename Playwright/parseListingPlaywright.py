@@ -50,7 +50,6 @@ async def getDetail(elSelector, page) -> str:
     
     :param {string} elSelector - The selector to find the specified element
     :param {page object} page - The browser page displaying a listing
-
     :return The text of the element specified
     """ 
     el = page.locator(elSelector)
@@ -60,7 +59,6 @@ async def getFeatures(page) -> list:
     """Gets the name and specifics of each detail listed on the page
     
     :param {page object} page - The browser page displaying a listing
-
     :return A list of small dictionaries of strings of all the details {title: name}
     """
     allFeatures = []
@@ -87,7 +85,7 @@ async def getPhotos(page) -> list:
     
     :return A list containing the src to all the photos of the current listing"""
     photos = []
-    images = await page.query_selector_all("a>img")
+    images = await page.query_selector_all(".object-media-fotos a>img")
     
     for i in range(len(images)):
         imageSRC = await images[i].get_attribute("src")
@@ -105,23 +103,25 @@ async def getInfo(page) -> dict:
     
     :return A dictionary containing the information: title, address, url, features, and photos
     """
-
-    return {
-        "title": await getDetail(
-        ".object-header__title",page),
-        "address": await getDetail(
-        ".object-header__subtitle", page),
-        "url": page.url,
-        "features": await getFeatures(page),
-        "photos": await getPhotos(page)
-    }
+    try:
+        await page.wait_for_selector(".object-header__title", timeout=2000)
+        return {
+            "title": await getDetail(
+            ".object-header__title",page),
+            "address": await getDetail(
+            ".object-header__subtitle", page),
+            "url": page.url,
+            "features": await getFeatures(page),
+            "photos": await getPhotos(page)
+        }
+    except Exception:
+        return {"apartment-complex": page.url}
+        print(f"Couldn't find title {page.url} - {err}")
 
 async def isRental(listingInfo) -> bool:
     """Returns whether or not the listing in a rental
     huur - rent
-
     :param {dict} listingInfo - A dictionary containing all the information for each listing
-
     :return {bool} True - is a rental listing, False - is a sale listing
     """
     return "huur" in listingInfo["url"]
@@ -140,12 +140,13 @@ async def writeToFile(listingInfo):
     
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
+
     if await isRental(listingInfo):
         fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
     else:
         fileName = f"sale--{scrapeDate}--{listingInfo['address']}.json"
     
-    await writeJson(fileName, listingInfo)
+    await writeJson(fileName.replace("/","-"), listingInfo)
         
 
 async def run(link, page):
@@ -159,12 +160,13 @@ async def run(link, page):
 
     #Link for testing - listing is rented
     #link = "https://www.funda.nl/huur/verhuurd/amstelveen/appartement-88448601-spurgeonlaan-14/"
-    await stealth_async(page)
 
     try:
-        await page.goto(link)
-        if await stillAvailable(page):
-            await writeToFile(await getInfo(page))
+        await page.goto(link, wait_until="domcontentloaded")
+        #if await stillAvailable(page):
+        info = await getInfo(page)
+        if info:
+            await writeToFile(info)
     except Exception as err:
         print(f"Error {link} {err}")
     
@@ -172,18 +174,27 @@ testingDate = "2023-02-23"
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     #Use scrapeDate for live - It is set to today()
+    
     links = readFile(f"{scrapeDate}Listings.txt")
     dailyURLs = links.splitlines()
 
-    for link in dailyURLs:
-        async with async_playwright() as player:
-            #User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
-            ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/69.0.3497.100 Safari/537.36")
-            browser = await player.chromium.launch(headless=True)
-            page = await browser.new_page(user_agent=ua)
+
+    async with async_playwright() as player:
+        #User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
+        ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/69.0.3497.100 Safari/537.36")
+        browser = await player.chromium.launch(headless=True, timeout=5000)
+        ctx = await browser.new_context(user_agent=ua)
+        page = await ctx.new_page()
+        await stealth_async(page)
+
+        for link in dailyURLs:
+
+            #await page.goto(link,wait_until="domcontentloaded")
+
             await run(link, page)
+        await browser.close()
 
 if __name__ == "__main__":
     asyncio.run(main())
