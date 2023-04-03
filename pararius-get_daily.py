@@ -59,10 +59,10 @@ async def getLinks(page) -> set:
         #print(type(links))
         for i in range(len(links)):
             el = links[i]
-            print(links[i])
+            #print(links[i])
             source = await el.get_attribute("href")
             
-            gemeentenLinks.add(source)
+            gemeentenLinks.add("https://www.pararius.com/"+source)
 
         return gemeentenLinks
     except Exception as err:
@@ -93,12 +93,11 @@ async def main():
     dailyLinks = []
 
     async with async_playwright() as player:
-        browser = await player.firefox.launch(headless = False)
+        browser = await player.chromium.launch(headless = True)
         #User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
-        ua = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/86.0.4240.198 Safari/537.36")
+        ua = ("Mozilla/5.0 (X11; Linux x86_64)"
+              "AppleWebKit/537.36 (KHTML, like Gecko)"
+              "Chrome/111.0.0.0 Safari/537.36")
         header = {"Referer": "https://www.google.com/"}
 
         page = await browser.new_page(user_agent=ua)
@@ -107,7 +106,7 @@ async def main():
         link = "https://www.pararius.com/apartments/nederland/since-1" #updated for Pararius
         await page.goto(link)
         numPages = await getNumPages(page) #updated for Pararius
-        dailyLinks.append(await getLinks(page))
+        #dailyLinks.append(await getLinks(page))
 
         for i in range(2,numPages+1):
             link = f"https://www.pararius.com/apartments/nederland/since-1/page-{i}" #updated for Pararius
