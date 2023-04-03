@@ -59,9 +59,10 @@ async def getLinks(page) -> set:
         #print(type(links))
         for i in range(len(links)):
             el = links[i]
+            print(links[i])
             source = await el.get_attribute("href")
-            if "navigateSource=resultlist" in source:
-                gemeentenLinks.add(source)
+            
+            gemeentenLinks.add(source)
 
         return gemeentenLinks
     except Exception as err:
@@ -100,7 +101,7 @@ async def main():
         "Chrome/86.0.4240.198 Safari/537.36")
         header = {"Referer": "https://www.google.com/"}
 
-        page = await browser.new_page(user_agent=ua, headers=header)
+        page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
         #page = await ctx.new_page()
         link = "https://www.pararius.com/apartments/nederland/since-1" #updated for Pararius
