@@ -59,7 +59,7 @@ async def getLinks(page) -> set:
         #print(type(links))
         for i in range(len(links)):
             el = links[i]
-            #print(links[i])
+            print(links[i])
             source = await el.get_attribute("href")
             
             gemeentenLinks.add("https://www.pararius.com/"+source)
@@ -110,7 +110,7 @@ async def main():
 
         for i in range(2,numPages+1):
             link = f"https://www.pararius.com/apartments/nederland/since-1/page-{i}" #updated for Pararius
-            await page.goto(link)
+            await page.goto(link, referer="https://google.com/")
             dailyLinks.append(await getLinks(page))
             #counter +=1
     allLinks = combineLinkSets(dailyLinks)
