@@ -11,6 +11,8 @@ cfg = config.read_config()
 #URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 #URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
 
+featuresNeeded = ["Listed since", "Type apartment", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories", "Year of construction", "Asking price"]
+
 # *** Methods *** #
 def readFile(inputFile) -> list:
     """Tries to open the passed in file
@@ -73,8 +75,10 @@ async def getFeatures(page) -> list:
     
     for i in range(len(allFeatureTitles)):
         title = await allFeatureTitles[i].inner_text()
-        detail = await allFeatureDetails[i].inner_text()
-        allFeatures.append({title: detail})
+        if title in featuresNeeded:
+            title = title.lower().replace(" ", "_")
+            detail = await allFeatureDetails[i].inner_text()
+            allFeatures.append({title: detail})
 
     return allFeatures
 
@@ -106,9 +110,9 @@ async def getInfo(page) -> dict:
     try:
         await page.wait_for_selector(".object-header__title", timeout=2000)
         return {
-            "title": await getDetail(
-            ".object-header__title",page),
             "address": await getDetail(
+            ".object-header__title",page),
+            "postal_code": await getDetail(
             ".object-header__subtitle", page),
             "url": page.url,
             "features": await getFeatures(page),
@@ -136,7 +140,18 @@ async def writeJson(fileName, listingInfo):
             outfile.write(json.dumps(listingInfo, indent=4))
 
 async def normaliseURL(URL):
+    """ This function takes in a URL string and returns a normalized URL string.
+
+    :param {string} URL - The input URL string to be normalized
+    """
     return URL[8:].replace("/", "%2F")
+
+async def enURL(URL):
+    """Returns a modified URL string that points to the English version of the current page.
+
+    :param {string} URL - The input URL string to be modified.
+    """
+    return URL[:21] + "en" + URL[20:]
 
 async def writeToFile(listingInfo):
     """Checks to see if the listing is a rental or a sale and sets the filename accordingly
@@ -193,10 +208,10 @@ async def main():
         await stealth_async(page)
 
         for link in dailyURLs:
-
+            enlink = await enURL(link)
             #await page.goto(link,wait_until="domcontentloaded")
 
-            await run(link, page)
+            await run(enlink, page)
         await browser.close()
 
 if __name__ == "__main__":
