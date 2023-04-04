@@ -3,7 +3,7 @@ import config
 from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
-from datetime import date
+from datetime import date, datetime
 
 scrapeDate = str(date.today())
 cfg = config.read_config()
@@ -135,19 +135,22 @@ async def writeJson(fileName, listingInfo):
     with open(f"listings/{fileName}", "a") as outfile:
             outfile.write(json.dumps(listingInfo, indent=4))
 
+async def normaliseURL(URL):
+    return URL[8:].replace("/", "%2F")
+
 async def writeToFile(listingInfo):
     """Checks to see if the listing is a rental or a sale and sets the filename accordingly
     
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
+    url_final = await normaliseURL(listingInfo["url"])
 
-    if await isRental(listingInfo):
-        fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
-    else:
-        fileName = f"sale--{scrapeDate}--{listingInfo['address']}.json"
-    
+    now = datetime.now()
+    current_time = now.strftime("%H-%M-%S")
+
+    fileName = f"{scrapeDate}_{current_time}_{url_final}.json"
+
     await writeJson(fileName.replace("/","-"), listingInfo)
-        
 
 async def run(link, page):
     """Runs the program to get information and write to a separate dated file for each listing
