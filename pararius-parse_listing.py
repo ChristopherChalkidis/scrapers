@@ -5,7 +5,6 @@ import asyncio
 from playwright_stealth import stealth_async
 from datetime import date
 
-scrapeDate = str(date.today())
 cfg = config.read_config()
 
 #URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
@@ -53,6 +52,7 @@ async def getDetail(elSelector, page) -> str:
     :return The text of the element specified
     """ 
     el = page.locator(elSelector)
+    #print(f"Returning {await el.inner_text()}")
     return await el.inner_text()
 
 async def getFeatures(page) -> list:
@@ -78,6 +78,14 @@ async def getFeatures(page) -> list:
 
     return allFeatures
 
+async def get_noscript(txt):
+    split_str = await txt.inner_html()
+    links = set()
+    for i in str(split_str).strip().split(" "):
+        if "https://casco-media-prod.global.ssl.fastly.net" in i:
+            links.add(i[i.find('http'):])
+    return links
+
 #TODO Can't get images unless they're currently displayed in the carousel
 async def getPhotos(page) -> list:
     """Gets all the photos on the page if they are photos of the listing
@@ -85,20 +93,20 @@ async def getPhotos(page) -> list:
     :param {page object} page - The browser page displaying a listing
     
     :return A list containing the src to all the photos of the current listing"""
-    photos = []
+    photos = set()
     images = await page.query_selector_all(".picture--media-carrousel picture img")
-    imagesNoScript = await page.query_selector_all("noscript")
-    #print(page.locator(".picture--media-carrousel picture:has('noscript')"))
-    #print(images.inner_text())
+    
+    test = await page.query_selector("noscript")
+    image_links = await get_noscript(test)
+    for image in image_links:
+        photos.add(image)
     for i in range(len(images)):
-        print(await imagesNoScript[i].inner_text())
-        #print(await images[i].get_attribute("alt"))
         imageSRC = await images[i].get_attribute("src")
         #Checks to see if it is one of the listing photos
         if"https://casco-media-prod.global.ssl.fastly.net" in imageSRC:
-            photos.append(imageSRC)
-
-    return photos
+            photos.add(imageSRC)
+    
+    return list(photos)
 
 async def getInfo(page) -> dict:
     """Gets all the informatin for the listing that the page is at
@@ -158,7 +166,9 @@ async def run(link, page):
             await writeToFile(info)
     except Exception as err:
         print(f"Error {link} {err}")
-    
+
+scrapeDate = str(date.today())
+test_date = "2023-04-05"
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     #Use scrapeDate for live - It is set to today()

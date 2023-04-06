@@ -115,7 +115,7 @@ async def main():
             #counter +=1
     allLinks = combineLinkSets(dailyLinks)
     writeToFile(allLinks)
-    print(allLinks)
+    #print(allLinks)
 
 if __name__ == "__main__":
     asyncio.run(main())
