@@ -78,6 +78,7 @@ async def getFeatures(page) -> list:
 
     return allFeatures
 
+#TODO Can't get images unless they're currently displayed in the carousel
 async def getPhotos(page) -> list:
     """Gets all the photos on the page if they are photos of the listing
     
@@ -85,13 +86,16 @@ async def getPhotos(page) -> list:
     
     :return A list containing the src to all the photos of the current listing"""
     photos = []
-    images = await page.query_selector_all(".object-media-fotos a>img")
-    
+    images = await page.query_selector_all(".picture--media-carrousel picture img")
+    imagesNoScript = await page.query_selector_all("noscript")
+    #print(page.locator(".picture--media-carrousel picture:has('noscript')"))
+    #print(images.inner_text())
     for i in range(len(images)):
+        print(await imagesNoScript[i].inner_text())
+        #print(await images[i].get_attribute("alt"))
         imageSRC = await images[i].get_attribute("src")
-
         #Checks to see if it is one of the listing photos
-        if"https://cloud.funda.nl/valentina_media" in imageSRC:
+        if"https://casco-media-prod.global.ssl.fastly.net" in imageSRC:
             photos.append(imageSRC)
 
     return photos
@@ -104,27 +108,19 @@ async def getInfo(page) -> dict:
     :return A dictionary containing the information: title, address, url, features, and photos
     """
     try:
-        await page.wait_for_selector(".object-header__title", timeout=2000)
+
+        await page.wait_for_selector(".listing-detail-summary__title", timeout=5000)
         return {
             "title": await getDetail(
-            ".object-header__title",page),
+            ".listing-detail-summary__title",page),
             "address": await getDetail(
-            ".object-header__subtitle", page),
+            ".listing-detail-summary__location", page),
             "url": page.url,
-            "features": await getFeatures(page),
+            #"features": await getFeatures(page),
             "photos": await getPhotos(page)
         }
-    except Exception:
-        return {"apartment-complex": page.url}
+    except Exception as err:
         print(f"Couldn't find title {page.url} - {err}")
-
-async def isRental(listingInfo) -> bool:
-    """Returns whether or not the listing in a rental
-    huur - rent
-    :param {dict} listingInfo - A dictionary containing all the information for each listing
-    :return {bool} True - is a rental listing, False - is a sale listing
-    """
-    return "huur" in listingInfo["url"]
 
 async def writeJson(fileName, listingInfo):
     """Writes the listing info to a file with the passed in fileName
@@ -141,10 +137,10 @@ async def writeToFile(listingInfo):
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
 
-    if await isRental(listingInfo):
-        fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
-    else:
-        fileName = f"sale--{scrapeDate}--{listingInfo['address']}.json"
+    #if await isRental(listingInfo):
+    fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
+    #else:
+        #fileName = f"sale--{scrapeDate}--{listingInfo['address']}.json"
     
     await writeJson(fileName.replace("/","-"), listingInfo)
         
@@ -155,22 +151,14 @@ async def run(link, page):
     :param {string} link - The url to the listing to scrape
     :param {page object} page - The browser page to use to visit the link
     """
-    #Link for testing - listing is sold
-    #link = "https://www.funda.nl/koop/verkocht/amsterdam/appartement-88459046-retiefstraat-23-3/"
-
-    #Link for testing - listing is rented
-    #link = "https://www.funda.nl/huur/verhuurd/amstelveen/appartement-88448601-spurgeonlaan-14/"
-
     try:
         await page.goto(link, wait_until="domcontentloaded")
-        #if await stillAvailable(page):
         info = await getInfo(page)
         if info:
             await writeToFile(info)
     except Exception as err:
         print(f"Error {link} {err}")
     
-testingDate = "2023-02-23"
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     #Use scrapeDate for live - It is set to today()

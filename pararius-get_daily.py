@@ -55,14 +55,14 @@ async def getLinks(page) -> set:
         
         #Selects all links within the search-resuls class where the link element contains an element with the class search-result_header-title
         links = await page.query_selector_all(
-            ".listing-search-item__link")
+            ".listing-search-item__link--title")
         #print(type(links))
         for i in range(len(links)):
             el = links[i]
-            print(links[i])
+            #print(links[i])
             source = await el.get_attribute("href")
             
-            gemeentenLinks.add("https://www.pararius.com/"+source)
+            gemeentenLinks.add("https://www.pararius.com"+source)
 
         return gemeentenLinks
     except Exception as err:
@@ -93,7 +93,7 @@ async def main():
     dailyLinks = []
 
     async with async_playwright() as player:
-        browser = await player.chromium.launch(headless = True)
+        browser = await player.chromium.launch(headless = False)
         #User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
               "AppleWebKit/537.36 (KHTML, like Gecko)"
