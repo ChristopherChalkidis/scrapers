@@ -14,16 +14,10 @@ detailsNeededDutch = ["photos", "Address", "Huurprijs", "Waarborgsom", "Huurover
 #URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 #URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
 
-
-
-
-
-
 #COMPLETE Get images for listing (3?)
 #COMPLETE Read-in listings json
 #COMPLETE Test with list of listings - Doesn't work if in Dutch
 #COMPLETE Alter detailsNeeded to include Dutch names (Translate to English?)
-
 
 
 # *** Methods *** #
