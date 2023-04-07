@@ -96,8 +96,8 @@ async def getPhotos(page) -> list:
     photos = set()
     images = await page.query_selector_all(".picture--media-carrousel picture img")
     
-    test = await page.query_selector("noscript")
-    image_links = await get_noscript(test)
+    noscript_links = await page.query_selector("noscript")
+    image_links = await get_noscript(noscript_links)
     for image in image_links:
         photos.add(image)
     for i in range(len(images)):
