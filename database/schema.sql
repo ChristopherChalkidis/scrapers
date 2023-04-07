@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS property (
     listed_since TEXT,
     photos TEXT,
     kind_of_house TEXT,
+    type_apartment TEXT,
     living_area TEXT,
     number_of_rooms TEXT,
     number_of_bath_rooms TEXT,
