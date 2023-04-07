@@ -11,7 +11,7 @@ cfg = config.read_config()
 #URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 #URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
 
-featuresNeeded = ["Listed since", "Type apartment", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories", "Year of construction", "Asking price"]
+featuresNeeded = ["Listed since", "Type apartment", "Kind of house", "Living area", "Number of rooms", "Number of bath rooms", "Number of stories", "Year of construction", "Asking price", "Rental price", "Rental agreement", "Deposit"]
 
 # *** Methods *** #
 def readFile(inputFile) -> list:
@@ -75,7 +75,7 @@ async def getFeatures(page) -> list:
     
     for i in range(len(allFeatureTitles)):
         title = await allFeatureTitles[i].inner_text()
-        if title in featuresNeeded:
+        if title.strip() in featuresNeeded:
             title = title.lower().replace(" ", "_")
             detail = await allFeatureDetails[i].inner_text()
             allFeatures.append({title: detail})
