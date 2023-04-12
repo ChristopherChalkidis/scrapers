@@ -9,7 +9,9 @@ from datetime import date
 
 cfg = config.read_config()
 
-#TODO page routing to exclude resources slows down the program significantly. Why?
+# TODO page routing to exclude resources slows down the program significantly. Why?
+
+
 async def excludeResources(route):
     """ Takes in the route of the page being visited and prevents the loading of images, fonts, and media
 
@@ -23,6 +25,7 @@ async def excludeResources(route):
     else:
         await route.continue_()
 
+
 async def readFile(file) -> list:
     """ Gets all the links for each gemeenten from the file and returns a list of them
 
@@ -35,49 +38,50 @@ async def readFile(file) -> list:
         data = json.load(file)
     return data
 
+
 async def getNumPages(page) -> int:
     try:
         getNumResults = page.locator(".search-list-header__count")
         txt = await getNumResults.inner_text()
         pat = "\\d+"
-        numResults = re.findall(pat,txt)
+        numResults = re.findall(pat, txt)
         numResults = int(numResults[0])
         return math.ceil(numResults/30)
 
     except Exception as err:
         print(f"getNumPages error {page.url} {err}")
 
+
 async def getLinks(page) -> set:
     gemeentenLinks = set()
-    #print(f"Checking {link}")
     try:
-        #await page.route("**/*",excludeResources)
-        
-        #Selects all links within the search-resuls class where the link element contains an element with the class search-result_header-title
+        # await page.route("**/*",excludeResources) - Seems to slow down load, but can't figure out why
+
+        # Selects all links within the search-resuls class where the link element contains an element with the class search-result_header-title
         links = await page.query_selector_all(
             ".listing-search-item__link--title")
-        #print(type(links))
         for i in range(len(links)):
             el = links[i]
-            #print(links[i])
             source = await el.get_attribute("href")
-            
+
             gemeentenLinks.add("https://www.pararius.com"+source)
 
         return gemeentenLinks
     except Exception as err:
         print(f"getLinks error {page.url()} {err}")
 
+
 def combineLinkSets(linksSets) -> list:
     linksList = []
-    #print(linksSets)
     for links in linksSets:
         for link in links:
             linksList.append(link)
-    
+
     return linksList
 
+
 scrapeDate = str(date.today())
+
 
 def writeToFile(links):
     try:
@@ -88,34 +92,30 @@ def writeToFile(links):
     except Exception as err:
         print(f"writeToFile error {err}")
 
-#TODO Implement this https://stackoverflow.com/questions/51124516/python-requests-post-with-header-and-parameters https://www.blog.datahut.co/post/web-scraping-how-to-bypass-anti-scraping-tools-on-websites
+
 async def main():
     dailyLinks = []
 
     async with async_playwright() as player:
-        browser = await player.chromium.launch(headless = False)
-        #User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
+        browser = await player.chromium.launch(headless=False)
+        # User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
               "AppleWebKit/537.36 (KHTML, like Gecko)"
               "Chrome/111.0.0.0 Safari/537.36")
-        header = {"Referer": "https://www.google.com/"}
-
         page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
-        #page = await ctx.new_page()
-        link = "https://www.pararius.com/apartments/nederland/since-1" #updated for Pararius
+        link = "https://www.pararius.com/apartments/nederland/since-1"
         await page.goto(link)
-        numPages = await getNumPages(page) #updated for Pararius
-        #dailyLinks.append(await getLinks(page))
+        numPages = await getNumPages(page)
+        dailyLinks.append(await getLinks(page))
 
-        for i in range(2,numPages+1):
-            link = f"https://www.pararius.com/apartments/nederland/since-1/page-{i}" #updated for Pararius
-            await page.goto(link, referer="https://google.com/")
+        for i in range(2, numPages+1):
+            await page.goto(
+                f"https://www.pararius.com/apartments/nederland/since-1/page-{i}",
+                referer="https://google.com/")
             dailyLinks.append(await getLinks(page))
-            #counter +=1
     allLinks = combineLinkSets(dailyLinks)
     writeToFile(allLinks)
-    #print(allLinks)
 
 if __name__ == "__main__":
     asyncio.run(main())
