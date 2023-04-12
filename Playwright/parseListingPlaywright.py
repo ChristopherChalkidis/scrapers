@@ -76,7 +76,7 @@ async def getFeatures(page) -> list:
     for i in range(len(allFeatureTitles)):
         title = await allFeatureTitles[i].inner_text()
         if title.strip() in featuresNeeded:
-            title = title.lower().replace(" ", "_")
+            title = title.strip().lower().replace(" ", "_")
             detail = await allFeatureDetails[i].inner_text()
             allFeatures.append({title: detail})
 
