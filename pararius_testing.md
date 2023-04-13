@@ -34,9 +34,9 @@ I found a reference in one of the sites I was browsing to get around bot detecti
 
 - Captcha was triggered in both headless and headful mode while running my VPN, even when I changed it to appear I was in the Netherlands. I believe this is something to do with the way the traffic appears as it triggers a Captcha when going to Google as well.
 
-- Using Firefox instead of Chromium triggers Captcha even in headful mode.
+- Compared all browsers Playwright is compatible with (Chromium, Firefox, and WebKit). Using Firefox or Webkit instead of Chromium triggers Captcha even in headful mode.
 `browser = await player.firefox.launch(headless=False, timeout=5000)`
-`browser = await player.chromium.launch(headless=False, timeout=5000)`
+`browser = await player.webkit.launch(headless=False, timeout=5000)`
 
 - Possible fingerprinting
 Pararius could be using fingerprinting to determine that a vpn is being used. Did not find any helpful information on how to evade this. I thought there may be potential if the fingerprint could be matched to the selected user agent, but did not find a way to set fingerprint. <https://privacycheck.sec.lrz.de/passive/fp_h2/fp_http2.html>
