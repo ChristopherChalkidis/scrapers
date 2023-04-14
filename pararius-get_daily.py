@@ -2,7 +2,7 @@ import json
 import config
 import re
 import math
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import asyncio
 from undetected_playwright import stealth_async
 from datetime import date
@@ -39,8 +39,33 @@ async def readFile(file) -> list:
     return data
 
 
+async def notifyCaptcha(page, selector, take_screenshot= False):
+    """
+    Check whether a CAPTCHA challenge appears in the page while waiting for selector.
+        Parameters
+            page:
+            selector (str):
+            take_screenshot (bool) [optional]: take a screenshot to verify that whether a CAPTCHA appeared. 
+        Returns: Null
+        Throws exceptions if timed out 
+    """
+    try:
+        await page.wait_for_selector(selector, timeout=5000)
+    except PlaywrightTimeoutError:
+        is_captacha= await page.is_visible("#_csnl_cp")
+        
+        if take_screenshot:
+            await page.screenshot(path="captcha_screenshot.png")
+
+        if is_captacha:
+            raise Exception("Timed out because of a CAPTCHA challenge.")
+        else:
+            raise Exception("Timed out for unknown reason.")        
+
+
 async def getNumPages(page) -> int:
     try:
+        await notifyCaptcha(page, ".search-list-header__count")
         getNumResults = page.locator(".search-list-header__count")
         txt = await getNumResults.inner_text()
         pat = "\\d+"
