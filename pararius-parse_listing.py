@@ -61,26 +61,51 @@ async def getDetail(elSelector, page) -> str:
     return await el.inner_text()
 
 
+# async def getFeatures(page) -> list:
+#     """Gets the name and specifics of each detail listed on the page
+
+#     :param {page object} page - The browser page displaying a listing
+#     :return A list of small dictionaries of strings of all the details {title: name}
+#     """
+#     allFeatures = []
+
+#     # Selects all dt's that are children of the class
+#     allFeatureTitles = await page.query_selector_all(
+#         ".object-kenmerken-list dt")
+
+#     # Select all dd's that are immediately following a dt
+#     allFeatureDetails = await page.query_selector_all(
+#         ".object-kenmerken-list dt + dd")
+
+#     for i in range(len(allFeatureTitles)):
+#         title = await allFeatureTitles[i].inner_text()
+#         detail = await allFeatureDetails[i].inner_text()
+#         allFeatures.append({title: detail})
+
+#     return allFeatures
+
+
 async def getFeatures(page) -> list:
     """Gets the name and specifics of each detail listed on the page
-
+    
     :param {page object} page - The browser page displaying a listing
     :return A list of small dictionaries of strings of all the details {title: name}
     """
-    allFeatures = []
+    allFeatures= []
+    sections = await page.query_selector_all(".page__details")
 
-    # Selects all dt's that are children of the class
-    allFeatureTitles = await page.query_selector_all(
-        ".object-kenmerken-list dt")
+    for section in sections:
+        heading =  await section.query_selector_all(".page__heading")
 
-    # Select all dd's that are immediately following a dt
-    allFeatureDetails = await page.query_selector_all(
-        ".object-kenmerken-list dt + dd")
+        if heading:
+            heading_title = await heading[0].inner_text()
+            allFeatureTitles = await section.query_selector_all(".listing-features__term")
+            allFeatureDetails = await section.query_selector_all(".listing-features__description") 
 
-    for i in range(len(allFeatureTitles)):
-        title = await allFeatureTitles[i].inner_text()
-        detail = await allFeatureDetails[i].inner_text()
-        allFeatures.append({title: detail})
+            for i in range(len(allFeatureTitles)):
+                title = await allFeatureTitles[i].inner_text()
+                detail = await allFeatureDetails[i].inner_text()
+                allFeatures.append({heading_title+"-"+title: detail})
 
     return allFeatures
 
