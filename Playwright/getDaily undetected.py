@@ -116,7 +116,7 @@ async def main():
         page = await ctx.new_page()
         counter = 0 #See README.md
         for link in links:
-            #print(link)
+            print(link)
             if counter == 500:
                 await browser.close()
                 browser = await player.chromium.launch(headless = True)
