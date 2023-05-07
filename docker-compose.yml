@@ -1,0 +1,22 @@
+version: "3.8"
+services: #List of containers we want to create
+  run-scrapers: #Container name
+    image: scrapers:v1.0 #Image name
+    volumes: #Volume used by the run-scrapers container
+      - listings-data:/listings
+    ports:
+      - "8080:3000" #The ports to listen to the scrapers container
+  web:
+    image: mcr.microsoft.com/playwright/python:v1.27.1-jammy
+    environment:
+      - DISPLAY=<host display> #This is for Pararius
+    volumes:
+      - display-information:/tmp/.X11-unix:/tmp/.X11-unix #This is for Pararius
+  scraper-network: #Allos the containers to talk to each other
+    image: scrapers:v1.0 #This needs to be the name of the image the scrapers container speaks to
+    expose: #The port that they will communicate through
+      -  "8080"
+volumes:
+  listings-data: #This tells the other containers to access the listings-data volume that is used by the run-scrapers container
+    driver: local #Where Docker should save the information
+  display-information:
