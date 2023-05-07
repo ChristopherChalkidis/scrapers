@@ -49,7 +49,6 @@ async def getNumPages(page) -> int:
         if numResults == 0:
             return 0
         else:
-            # print(math.ceil(numResults%15))
             return math.ceil(numResults % 15)
     except Exception as err:
         print(f"getNumPages error {page.url} {err}")
