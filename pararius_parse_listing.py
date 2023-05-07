@@ -1,12 +1,10 @@
 import json
-import config
 from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
 from datetime import date
 import string
 
-cfg = config.read_config()
 
 # URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 # URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
@@ -87,20 +85,20 @@ async def getDetail(elSelector, page) -> str:
 
 async def getFeatures(page) -> list:
     """Gets the name and specifics of each detail listed on the page
-    
+
     :param {page object} page - The browser page displaying a listing
     :return A list of small dictionaries of strings of all the details {title: name}
     """
-    allFeatures= []
+    allFeatures = []
     sections = await page.query_selector_all(".page__details")
 
     for section in sections:
-        heading =  await section.query_selector_all(".page__heading")
+        heading = await section.query_selector_all(".page__heading")
 
         if heading:
             heading_title = await heading[0].inner_text()
             allFeatureTitles = await section.query_selector_all(".listing-features__term")
-            allFeatureDetails = await section.query_selector_all(".listing-features__description") 
+            allFeatureDetails = await section.query_selector_all(".listing-features__description")
 
             for i in range(len(allFeatureTitles)):
                 title = await allFeatureTitles[i].inner_text()

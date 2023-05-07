@@ -1,0 +1,23 @@
+[Running] python3 -u "/home/angeleah/Documents/Dev/ZenRent/Playwright/scrapper/getDaily undetected.py"
+File write successful!
+
+[Done] exited with code=0 in 4388.774 seconds
+
+[Running] python3 -u "/home/angeleah/Documents/Dev/ZenRent/Playwright/scrapper/parseListingPlaywright.py"
+Error https://www.funda.nl/koop/yerseke/appartement-88490633-de-zaete-37/?navigateSource=resultlist [Errno 2] No such file or directory: 'listings/Sale--2023-02-28--4401 NN Yerseke Yerseke - Molenpolder/Olzendepolder.json'
+Error https://www.funda.nl/koop/haaren/huis-42036852-esdoornlaan-17/?navigateSource=resultlist Timeout 30000ms exceeded.
+=========================== logs ===========================
+navigating to "https://www.funda.nl/koop/haaren/huis-42036852-esdoornlaan-17/?navigateSource=resultlist", waiting until "load"
+============================================================
+Error https://www.funda.nl/koop/steenwijk/huis-88491273-gasthuislaan-78/?navigateSource=resultlist net::ERR_NAME_NOT_RESOLVED at https://www.funda.nl/koop/steenwijk/huis-88491273-gasthuislaan-78/?navigateSource=resultlist
+=========================== logs ===========================
+navigating to "https://www.funda.nl/koop/steenwijk/huis-88491273-gasthuislaan-78/?navigateSource=resultlist", waiting until "load"
+============================================================
+Error https://www.funda.nl/koop/poortugaal/huis-42035990-albrandswaardseweg-27/?navigateSource=resultlist Timeout 30000ms exceeded.
+=========================== logs ===========================
+navigating to "https://www.funda.nl/koop/poortugaal/huis-42035990-albrandswaardseweg-27/?navigateSource=resultlist", waiting until "load"
+============================================================
+Error https://www.funda.nl/koop/dinxperlo/huis-42036950-churchillstraat-28/?navigateSource=resultlist [Errno 2] No such file or directory: 'listings/Sale--2023-02-28--7091 XL Dinxperlo Dinxperlo Centrum/Oost.json'
+Error https://www.funda.nl/koop/purmerend/huis-42036538-gaasterland-3/?navigateSource=resultlist [Errno 2] No such file or directory: 'listings/Sale--2023-02-28--1447 BL Purmerend Purmer-Zuid/Noord.json'
+
+[Done] exited with code=0 in 3897.949 seconds

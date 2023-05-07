@@ -1,5 +1,4 @@
 import json
-import config
 import re
 import math
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
@@ -7,7 +6,6 @@ import asyncio
 from undetected_playwright import stealth_async
 from datetime import date
 
-cfg = config.read_config()
 
 # TODO page routing to exclude resources slows down the program significantly. Why?
 
@@ -39,7 +37,7 @@ async def readFile(file) -> list:
     return data
 
 
-async def notifyCaptcha(page, selector, take_screenshot= False):
+async def notifyCaptcha(page, selector, take_screenshot=False):
     """
     Check whether a CAPTCHA challenge appears in the page while waiting for selector.
         Parameters
@@ -52,15 +50,15 @@ async def notifyCaptcha(page, selector, take_screenshot= False):
     try:
         await page.wait_for_selector(selector, timeout=5000)
     except PlaywrightTimeoutError:
-        is_captacha= await page.is_visible("#_csnl_cp")
-        
+        is_captacha = await page.is_visible("#_csnl_cp")
+
         if take_screenshot:
             await page.screenshot(path="captcha_screenshot.png")
 
         if is_captacha:
             raise Exception("Timed out because of a CAPTCHA challenge.")
         else:
-            raise Exception("Timed out for unknown reason.")        
+            raise Exception("Timed out for unknown reason.")
 
 
 async def getNumPages(page) -> int:
