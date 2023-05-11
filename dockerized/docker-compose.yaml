@@ -1,0 +1,43 @@
+services:
+  scrapper:
+    build: ./scrapper
+    image: scrapper-scripts-image
+    container_name: scrapper-scripts-container
+    volumes:
+      - ./listings:/listings
+    ports:
+      - "8080:3000"
+
+  web:
+    image: mcr.microsoft.com/playwright/python:v1.27.1-jammy
+    environment:
+      - DISPLAY=<host display> #This is for Pararius
+    volumes:
+      - ./display-information:/tmp/.X11-unix:/tmp/.X11-unix #This is for Pararius
+    
+  scraper-network: #Allos the containers to talk to each other
+    image: scrapper-scripts-image #This needs to be the name of the image the scrapers container speaks to
+    depends_on:
+      - scrapper
+    expose: #The port that they will communicate through
+      -  "8080"
+
+# This should remain unchanged
+  db_scripts:
+    build: ./db_scripts
+    image: scrapper-database-image
+    container_name: scapper-database-container
+    depends_on:
+      - scrapper
+    volumes:
+      - ./database:/database 
+      - ./listings:/listings
+
+  scheduler:
+    build: ./scheduler
+    image: scheduler-image
+    depends_on:
+      - scrapper
+      - db_scripts 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
