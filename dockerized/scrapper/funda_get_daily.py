@@ -95,7 +95,7 @@ scrapeDate = str(date.today())
 
 def writeToFile(links):
     try:
-        with open(f"{scrapeDate}Listings.txt", "w") as outfile:
+        with open(f"listings/{scrapeDate}Listings.txt", "w") as outfile:
             for link in links:
                 outfile.write(link+"\n")
         print("File write successful!")
@@ -113,10 +113,15 @@ async def main():
     async with async_playwright() as player:
         browser = await player.chromium.launch(headless=True)
         # User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
+        # ua = (
+        #     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        #     "AppleWebKit/537.36 (KHTML, like Gecko) "
+        #     "Chrome/86.0.4240.198 Safari/537.36")
         ua = (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/86.0.4240.198 Safari/537.36")
+            "Mozilla/5.0 (X11; Linux x86_64)"
+            "AppleWebKit/537.36 (KHTML, like Gecko)"
+            "Chrome/113.0.0.0 Safari/537.36"
+            )
 
         ctx = await browser.new_context(user_agent=ua)
         await stealth_async(ctx)
