@@ -143,7 +143,7 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"listings/{fileName}", "a") as outfile:
+    with open(f"../listings/{fileName}", "a") as outfile:
         outfile.write(json.dumps(listingInfo, indent=4))
 
 
@@ -201,14 +201,11 @@ async def run(link, page):
     except Exception as err:
         print(f"Error {link} {err}")
 
-testingDate = "2023-02-23"
-
-
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     # Use scrapeDate for live - It is set to today()
 
-    links = readFile(f"listings/{scrapeDate}Listings.txt")
+    links = readFile(f"../listings/{scrapeDate}Listings.txt")
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:

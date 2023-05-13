@@ -95,7 +95,7 @@ scrapeDate = str(date.today())
 
 def writeToFile(links):
     try:
-        with open(f"listings/{scrapeDate}Listings.txt", "w") as outfile:
+        with open(f"../listings/{scrapeDate}Listings.txt", "w") as outfile:
             for link in links:
                 outfile.write(link+"\n")
         print("File write successful!")
