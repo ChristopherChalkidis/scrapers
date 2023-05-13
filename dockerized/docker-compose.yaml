@@ -1,33 +1,22 @@
 services:
-  scrapper:
-    build: ./scrapper
-    image: scrapper-scripts-image
-    container_name: scrapper-scripts-container
+  funda-scrapper:
+    build: ./funda-scrapper
+    image: funda-scrapper-image
+    container_name: funda-scrapper-container
     volumes:
-      - scrapper-listings:/app/listings
+      - ./database:/app/database 
+      - ./listings:/app/listings
     ports:
       - "8080:3000"
 
 # This should remain unchanged
-  db_scripts:
-    build: ./db_scripts
-    image: scrapper-database-image
-    container_name: scapper-database-container
-    depends_on:
-      - scrapper
-    volumes:
-      - ./database:/database 
-      - ./listings:/listings
-
   scheduler:
     build: ./scheduler
     image: scheduler-image
     depends_on:
-      - scrapper
-      - db_scripts 
+      - funda-scrapper
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./logs:/logs
 
-volumes:
-  scrapper-listings:
+# volumes:
+#   funda-database:
