@@ -132,7 +132,7 @@ async def main():
         await stealth_async(ctx)
         page = await ctx.new_page()
         counter = 0  # See README.md
-        for link in links[:10]:
+        for link in links:
            # print(link)
             if counter == 500:
                 await browser.close()
