@@ -46,7 +46,7 @@ def main():
         if file.endswith(".json"):
             with open(os.path.join(json_path, file), 'r') as f:
                 data = json.load(f)
-                print(data)
+                #print(data)
                 # Extract the relevant information from the JSON data
                 address = data["address"]
                 postal_code = data["postal_code"]
