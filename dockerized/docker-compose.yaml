@@ -12,7 +12,8 @@ services:
 # This should remain unchanged
   scheduler:
     build: ./scheduler
-    image: scheduler-image
+    image: funda_scheduler-image
+    container_name: funda_scheduler-container
     depends_on:
       - funda_scrapper
     volumes:
