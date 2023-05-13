@@ -208,14 +208,17 @@ async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     # Use scrapeDate for live - It is set to today()
 
-    links = readFile(f"{scrapeDate}Listings.txt")
+    links = readFile(f"listings/{scrapeDate}Listings.txt")
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:
         # User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
-        ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-              "AppleWebKit/537.36 (KHTML, like Gecko) "
-              "Chrome/69.0.3497.100 Safari/537.36")
+        # ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        #       "AppleWebKit/537.36 (KHTML, like Gecko) "
+        #       "Chrome/69.0.3497.100 Safari/537.36")
+        ua = ("Mozilla/5.0 (X11; Linux x86_64)"
+            "AppleWebKit/537.36 (KHTML, like Gecko)"
+            "Chrome/113.0.0.0 Safari/537.36")
         browser = await player.chromium.launch(headless=True, timeout=5000)
         ctx = await browser.new_context(user_agent=ua)
         page = await ctx.new_page()
