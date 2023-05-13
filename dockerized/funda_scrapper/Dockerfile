@@ -23,16 +23,6 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /
 USER appuser
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-#This should point at and start the bash scheduling script
-CMD ["python3", "funda_get_daily.py"] 
 
-# Database dockerfile
-# FROM python:3.10-slim-buster
-
-# WORKDIR /db_scripts
-
-# COPY . /db_scripts
-
-# RUN mkdir /database /listings
-
-CMD [ "bash","/db_scripts/start_populate_db.sh" ]
+# Run a bash script that contains all scripts that needs to run in order.
+CMD [ "bash","/app/scrape_populatedb.sh" ]
