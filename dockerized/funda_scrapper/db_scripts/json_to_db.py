@@ -8,11 +8,14 @@ from urllib.parse import urlparse
 #listed since today?
 #country
 
+# # For portability, we obtain the absolute path to the script
+# dirname = os.path.dirname(os.path.abspath(__file__))
+
 # Set the path to the directory containing the JSON files
-json_path = "../listings"
+json_path = "/app/listings"
 
 # Set the path to the SQLite database
-db_path = "../database/properties.db"
+db_path = "/app/database/properties.db"
 
 # Create a connection to the database
 conn = sqlite3.connect(db_path)

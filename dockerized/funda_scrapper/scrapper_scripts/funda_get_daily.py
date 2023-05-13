@@ -5,10 +5,13 @@ from playwright.async_api import async_playwright
 import asyncio
 from undetected_playwright import stealth_async
 from datetime import date
+# import os
 
 
 # TODO page routing to exclude resources slows down the program significantly. Why?
 
+# For portablity of the script
+# dirname = os.path.dirname(os.path.abspath(__file__))
 
 async def excludeResources(route):
     """ Takes in the route of the page being visited and prevents the loading of images, fonts, and media
@@ -94,8 +97,9 @@ scrapeDate = str(date.today())
 
 
 def writeToFile(links):
+    # filename = os.path.join(dirname, f"../listings/{scrapeDate}Listings.txt")
     try:
-        with open(f"../listings/{scrapeDate}Listings.txt", "w") as outfile:
+        with open(f"/app/listings/{scrapeDate}Listings.txt", "w") as outfile:
             for link in links:
                 outfile.write(link+"\n")
         print("File write successful!")
@@ -106,7 +110,8 @@ def writeToFile(links):
 async def main():
     dailyLinks = []
     try:
-        links = await readFile("funda_gemeenten_links.json")
+        # filename = os.path.join(dirname, "funda_gemeenten_links.json")
+        links = await readFile("/app/scrapper_scripts/funda_gemeenten_links.json")
     except Exception as err:
         print(f"readFile error: {err}")
 
