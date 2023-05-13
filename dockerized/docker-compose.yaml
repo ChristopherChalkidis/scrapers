@@ -4,8 +4,8 @@ services:
     image: funda_scrapper-image
     container_name: funda_scrapper-container
     volumes:
-      - ./database:/app/database 
-      - ./listings:/app/listings
+      - funda-database:/app/database 
+      - funda-listings:/app/listings
     ports:
       - "8080:3000"
 
@@ -19,5 +19,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-# volumes:
-#   funda-database:
+volumes:
+  funda-listings:
+  funda-database:
