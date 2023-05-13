@@ -1,8 +1,8 @@
 services:
-  funda-scrapper:
-    build: ./funda-scrapper
-    image: funda-scrapper-image
-    container_name: funda-scrapper-container
+  funda_scrapper:
+    build: ./funda_scrapper
+    image: funda_scrapper-image
+    container_name: funda_scrapper-container
     volumes:
       - ./database:/app/database 
       - ./listings:/app/listings
@@ -14,7 +14,7 @@ services:
     build: ./scheduler
     image: scheduler-image
     depends_on:
-      - funda-scrapper
+      - funda_scrapper
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 

@@ -1,2 +1,2 @@
-*/10 * * * * docker restart funda-scrapper-container
+*/10 * * * * docker restart funda_scrapper-container
 # extra line to make this a valid crontab.
