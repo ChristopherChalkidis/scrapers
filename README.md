@@ -9,15 +9,7 @@ Clone the repo
 git clone https://github.com/techadvisory/scrapper.git
 ```
 
-## B. How to Run
-
-- I believe these are the steps for a new computer
-
-1. docker build -t scrapers:v1.0 .
-2. docker create --name run-scrapers scrapers:v1.0
-3. docker compose up
-
-### Scheduled Scrapper
+## B. Scheduled Scrapper
 - To spin up a container that will run the scrapper everyday at 8am use
     ```
     cd dockerized
