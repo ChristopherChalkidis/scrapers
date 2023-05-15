@@ -1,0 +1,37 @@
+services:
+  funda_scrapper:
+    build: ./funda_scrapper
+    image: funda_scrapper-image
+    container_name: funda_scrapper-container
+    volumes:
+      - funda-database:/app/database 
+      - funda-listings:/app/listings
+    ports:
+      - "8080:3000"
+  pararius_scraper:
+    build: ./pararius_scraper
+    image: pararius_scraper_image
+    container_name: pararius_scraper_container
+    volumes:
+      - pararius-listings:/app/listings
+      - pararius-database:/app/database
+    ports:
+     - "8000:3030"
+
+# This should remain unchanged
+  scheduler:
+    build: ./scheduler
+    image: scheduler_image
+    container_name: scheduler_container
+    depends_on:
+      - funda_scrapper
+      - pararius_scraper
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  funda-listings:
+  funda-database:
+  pararius-listings:
+  pararius-database:
+  display-information:

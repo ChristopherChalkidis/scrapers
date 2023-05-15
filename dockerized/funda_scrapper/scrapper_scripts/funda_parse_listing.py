@@ -3,7 +3,10 @@ from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
 from datetime import date, datetime
+# import os
 
+# # For portablity of the script
+# dirname = os.path.dirname(os.path.abspath(__file__))
 
 # URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 # URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
@@ -143,7 +146,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"listings/{fileName}", "a") as outfile:
+    # fileName = os.path.join(dirname, f"../listings/{fileName}")
+    with open(f"/app/listings/{fileName}", "a") as outfile:
         outfile.write(json.dumps(listingInfo, indent=4))
 
 
@@ -201,21 +205,22 @@ async def run(link, page):
     except Exception as err:
         print(f"Error {link} {err}")
 
-testingDate = "2023-02-23"
-
-
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     # Use scrapeDate for live - It is set to today()
 
-    links = readFile(f"{scrapeDate}Listings.txt")
+    # filename = os.path.join(dirname, f"../listings/{scrapeDate}Listings.txt")
+    links = readFile(f"/app/listings/{scrapeDate}Listings.txt")
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:
         # User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
-        ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-              "AppleWebKit/537.36 (KHTML, like Gecko) "
-              "Chrome/69.0.3497.100 Safari/537.36")
+        # ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        #       "AppleWebKit/537.36 (KHTML, like Gecko) "
+        #       "Chrome/69.0.3497.100 Safari/537.36")
+        ua = ("Mozilla/5.0 (X11; Linux x86_64)"
+            "AppleWebKit/537.36 (KHTML, like Gecko)"
+            "Chrome/113.0.0.0 Safari/537.36")
         browser = await player.chromium.launch(headless=True, timeout=5000)
         ctx = await browser.new_context(user_agent=ua)
         page = await ctx.new_page()
