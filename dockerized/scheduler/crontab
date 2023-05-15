@@ -1,3 +1,4 @@
 # Schedule the container to rerun every day at 8 am. More on cron expressions https://crontab.guru/ 
 0 8 * * * docker restart funda_scrapper-container
+0 8 * * * docker restart pararius_scraper_container
 # extra line to make this a valid crontab.
