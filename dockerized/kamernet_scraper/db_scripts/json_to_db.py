@@ -8,9 +8,6 @@ from urllib.parse import urlparse
 #listed since today?
 #country
 
-# # For portability, we obtain the absolute path to the script
-# dirname = os.path.dirname(os.path.abspath(__file__))
-
 # Set the path to the directory containing the JSON files
 json_path = "/app/listings"
 
