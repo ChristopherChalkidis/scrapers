@@ -86,14 +86,11 @@ async def main():
         
         page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
-        # numPages = await getNumPages(page)
-        # print(numPages)
-        # numPages will range 110 - 120 pages.
-        # Kamernet adds ~250 new listings everyday. Source: https://kamernet.nl/en/how-does-it-work/a 
-        # Instead we grab the first 20 pages * 18 listings = 360 newest listings 
-        numPages = 20 
-        
-        # Once our scraper grabs this number of old listings, it should stop:
+        link = "https://kamernet.nl/en/for-rent/rooms-netherlands"
+        await page.goto(link)
+        numPages = await getNumPages(page)
+        # print(numPages)        
+        # Once our scraper grabs a [threshold] number of old listings, it should stop:
         threshold = 3
 
         for i in range(1, numPages+1):
@@ -105,7 +102,7 @@ async def main():
             listingsURLs, count = await getLinks(page)
             dailyLinks.append(listingsURLs)
 
-            # If number of old listing on the page is above a threshold, stop the loop:
+            # If number of old listing on the page is above the threshold, stop the loop:
             if count > threshold:
                 print(f"On page {i} there were {count} listings older than one day.")
                 break
