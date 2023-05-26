@@ -68,10 +68,26 @@ def main():
                 site = site.netloc.split(".")[1]
                 city = url.split("/")[5].replace("-", " ")
                 country = "nl"
+                updated_at = None
 
                 #Insert data into property table
-                cursor.execute('INSERT INTO property (address, listed_since, photos, kind_of_house, type_apartment, living_area, number_of_rooms, number_of_bath_rooms, number_of_stories, url, title, postal_code, year_of_construction, site, scrapped_at, city, country) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                                (address, listed_since, photos, kind_of_house, type_apartment, living_area, number_of_rooms, number_of_bath_rooms, number_of_stories, url, address, postal_code, year_of_construction, site, scrapped_at, city, country))
+                cursor.execute('INSERT INTO property (address, listed_since, photos, kind_of_house, type_apartment, living_area, number_of_rooms, number_of_bath_rooms, number_of_stories, url, title, postal_code, year_of_construction, site, scrapped_at, city, country, updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) \
+                                ON CONFLICT(url) DO UPDATE SET \
+                                address = excluded.address, \
+                                listed_since = excluded.listed_since, \
+                                photos = excluded.photos, \
+                                kind_of_house = excluded.kind_of_house, \
+                                type_apartment = excluded.type_apartment, \
+                                living_area = excluded.living_area, \
+                                number_of_rooms = excluded.number_of_rooms, \
+                                number_of_bath_rooms = excluded.number_of_bath_rooms, \
+                                number_of_stories = excluded.number_of_stories, \
+                                postal_code = excluded.postal_code, \
+                                year_of_construction = excluded.year_of_construction, \
+                                city = excluded.city, \
+                                country = excluded.country, \
+                                updated_at = datetime("now")',
+                                (address, listed_since, photos, kind_of_house, type_apartment, living_area, number_of_rooms, number_of_bath_rooms, number_of_stories, url, address, postal_code, year_of_construction, site, scrapped_at, city, country, updated_at))
                 
                 # Get the property ID of the property just inserted
                 cursor.execute('SELECT property_id FROM property WHERE url = ?', (url,))
@@ -79,13 +95,19 @@ def main():
 
                 #Insert data into property_for_rent table
                 if is_rental_listing(url):
-                    cursor.execute('INSERT INTO property_for_rent (property_id, rental_price, deposit, rental_aggrement) VALUES(?,?,?,?)',
-                                (property_id, rental_price, deposit, rental_aggrement))
+                    cursor.execute('INSERT INTO property_for_rent (property_id, rental_price, deposit, rental_aggrement) VALUES(?,?,?,?) \
+                                    ON CONFLICT(property_id)DO UPDATE SET \
+                                    rental_price = excluded.rental_price, \
+                                    deposit = excluded.deposit, \
+                                    rental_aggrement = excluded.rental_aggrement',
+                                    (property_id, rental_price, deposit, rental_aggrement))
   
                 #Insert data into property_for_sale table
                 else:
-                    cursor.execute('INSERT INTO property_for_sale (property_id, asking_price) VALUES(?,?)',
-                                (property_id, asking_price))
+                    cursor.execute('INSERT INTO property_for_sale (property_id, asking_price) VALUES(?,?) \
+                                    ON CONFLICT(property_id)DO UPDATE SET \
+                                    asking_price = excluded.asking_price',
+                                    (property_id, asking_price))
 
                 
                 conn.commit()
