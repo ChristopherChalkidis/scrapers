@@ -2,7 +2,8 @@ import json
 from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
-from datetime import date
+import datetime
+import sys
 
 # URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 # URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
@@ -130,25 +131,20 @@ async def getFeatures(page) -> list:
     sections = await page.query_selector_all(".info-wrapper")
 
     for section in sections:
-        print(f"Section {await section.inner_text()}")
-
         heading_title = await section.query_selector_all(".info-wrapper__header > h5")
-        allFeatureTitles = await section.query_selector_all(".info-wrapper__key")
-        allFeatureDetails = await section.query_selector_all(".info-wrapper__value")
+        blocks = await section.query_selector_all(".info-wrapper__block")
 
-        for i in range(len(allFeatureTitles)):
-            print("Starting")
-            section_heading = await heading_title[i].inner_text()
-            title = await allFeatureTitles[i].inner_text()
-            detail = await allFeatureDetails[i].inner_text()
-            print(f"{title}: {detail}")
-            print(f"{section_heading}")
-            if title:
-                allFeatures.append({section_heading+"-"+title: detail})
-            else:
-                allFeatures.append({section_heading+"-"+detail})
-            print("Ending")
+        for block in blocks:
+            allFeatureTitles = await block.query_selector_all(".info-wrapper__key >p")
+            allFeatureDetails = await block.query_selector_all(".info-wrapper__value >p")
 
+            for i in range(len(allFeatureTitles)):
+                section_heading = await heading_title[i].inner_text()
+                title = await allFeatureTitles[i].inner_text()
+                detail = await allFeatureDetails[i].inner_text()
+                allFeatures.append(f"{section_heading} - {title}: {detail}")
+
+    print(f"Number of features: {len(allFeatures)}")
     return allFeatures
 
 
@@ -160,11 +156,10 @@ async def getDetail(elSelector, page) -> str:
     :return The text of the element specified
     """
     el = page.locator(elSelector)
-    # print(f"Returning {await el.inner_text()}")
     return await el.inner_text()
 
 
-async def getInfo(page) -> dict:
+async def getInfo(cut_off_date, page) -> dict:
     """Gets all the informatin for the listing that the page is at
 
     :param {page object} page - The browser page displaying a listing
@@ -174,17 +169,26 @@ async def getInfo(page) -> dict:
     try:
 
         await page.wait_for_selector(".title__listing", timeout=5000)
-        return {
-            "title": await getDetail(
-                ".title__listing", page),
-            "address": await getDetail(
-                ".first-block p", page),
-            "url": page.url,
-            "features": await getFeatures(page),
-            "photos": await getPhotos(page)
-        }
+        # Get the listed next to "Home active since" text - this is the date the home was listed
+        posted_date = await page.query_selector_all(
+            ".info-wrapper__value:near(:text('Woning actief sinds'))")
+        posted_str = await posted_date[0].inner_text()
+
+        # If the date the house was posted is before the cut_off_date (2 days prior to current) then exit the program
+        if posted_str < cut_off_date:
+            sys.exit(0)
+        else:
+            return {
+                "title": await getDetail(
+                    ".title__listing", page),
+                "address": await getDetail(
+                    ".first-block p", page),
+                "url": page.url,
+                "features": await getFeatures(page),
+                "photos": await getPhotos(page)
+            }
     except Exception as err:
-        print(f"Couldn't find title {page.url} - {err}")
+        print(f"Couldn't find detail {page.url} - {err}")
 
 
 async def run(link, page):
@@ -193,9 +197,16 @@ async def run(link, page):
     :param {string} link - The url to the listing to scrape
     :param {page object} page - The browser page to use to visit the link
     """
+
+    today = datetime.date.today().strftime('%d-%m-%Y')
+    print(f"Today: {today}")
+    cut_off_date = (datetime.datetime.strptime(
+        today, "%d-%m-%Y") - datetime.timedelta(days=2)).strftime("%d-%m-%Y")
+    print(f"Cut off: {cut_off_date}")
+
     try:
         await page.goto(link, wait_until="domcontentloaded")
-        info = await getInfo(page)
+        info = await getInfo(cut_off_date, page)
         if info:
             await writeToFile(info)
     except Exception as err:
@@ -204,9 +215,9 @@ async def run(link, page):
 # COMPLETE Research #6 https://www.zenrows.com/blog/web-scraping-without-getting-blocked#why-is-web-scraping-not-allowed
 # COMPLETE set sec-ch-ua to match user-agent
 # COMPLETE look at asyncio gather tasks for concurrency - https://www.zenrows.com/blog/speed-up-web-scraping-with-concurrency-in-python
-scrapeDate = str(date.today())
+scrapeDate = str(datetime.date.today())
 
-test_link = "https://www.huurstunt.nl/appartement/huren/in/amsterdam/boeckenburg/H3guG"
+test_link = "https://www.huurstunt.nl/huurwoning/huren/in/amsterdam/paul-scholtenstraat/HK5BI"
 
 
 async def main():
