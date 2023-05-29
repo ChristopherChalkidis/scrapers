@@ -16,8 +16,8 @@ def combineLinkSets(linksSets):
 scrapeDate = str(date.today())
 def writeToFile(links):
     try:
-        #with open(f"/app/listings/{scrapeDate}Listings.txt", "w") as outfile:
-        with open(f"{scrapeDate}Listings.txt", "w") as outfile: # Needed for testing
+        with open(f"/app/listings/{scrapeDate}Listings.txt", "w") as outfile:
+        #with open(f"{scrapeDate}Listings.txt", "w") as outfile: # Needed for testing
             for link in links:
                 outfile.write(link+"\n")
         print("File write successful!")
