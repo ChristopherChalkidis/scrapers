@@ -17,6 +17,15 @@ services:
       - pararius-database:/app/database
     ports:
      - "8000:3030"
+  kamernet_scraper:
+    build: ./kamernet_scraper
+    image: kamernet_scraper_image
+    container_name: kamernet_scraper_container
+    volumes:
+      - kamernet-listings:/app/listings
+      - kamernet-database:/app/database
+    ports:
+     - "8000:3060"
 
 # This should remain unchanged
   scheduler:
@@ -26,6 +35,7 @@ services:
     depends_on:
       - funda_scrapper
       - pararius_scraper
+      - kamernet_scraper
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -34,4 +44,6 @@ volumes:
   funda-database:
   pararius-listings:
   pararius-database:
+  kamernet-listings:
+  kamernet-database:
   display-information:
