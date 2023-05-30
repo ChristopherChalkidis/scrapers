@@ -201,7 +201,7 @@ async def run(link, page):
     today = datetime.date.today().strftime('%d-%m-%Y')
     print(f"Today: {today}")
     cut_off_date = (datetime.datetime.strptime(
-        today, "%d-%m-%Y") - datetime.timedelta(days=2)).strftime("%d-%m-%Y")
+        today, "%d-%m-%Y") - datetime.timedelta(days=1)).strftime("%d-%m-%Y")
     print(f"Cut off: {cut_off_date}")
 
     try:
@@ -212,9 +212,6 @@ async def run(link, page):
     except Exception as err:
         print(f"Error {link} {err}")
 
-# COMPLETE Research #6 https://www.zenrows.com/blog/web-scraping-without-getting-blocked#why-is-web-scraping-not-allowed
-# COMPLETE set sec-ch-ua to match user-agent
-# COMPLETE look at asyncio gather tasks for concurrency - https://www.zenrows.com/blog/speed-up-web-scraping-with-concurrency-in-python
 scrapeDate = str(datetime.date.today())
 
 test_link = "https://www.huurstunt.nl/huurwoning/huren/in/amsterdam/paul-scholtenstraat/HK5BI"
@@ -237,9 +234,27 @@ async def main():
         page = await ctx.new_page()
         await stealth_async(page)
 
-        await run(test_link, page)
-        """ for link in dailyURLs:
-            await run(link, page) """
+        """ main_page = "https://www.huurstunt.nl/huren/nederland/"
+        await page.goto(main_page, wait_until="domcontentloaded") """
+
+        """ pages = await page.query_selector_all("a")
+        print(f"Pages {len(pages)}") """
+
+        # await run(test_link, page)
+        for i in range(15):
+            link = f"https://www.huurstunt.nl/huren/nederland/p{i+1}"
+            await page.goto(link, wait_until="domcontentloaded")
+            print(f"Listings page {i+1}")
+            results = await page.query_selector_all("a")
+            for result in results:
+                print(f"result {await result.get_attribute('href')}")
+            """print(f"Links {len(results)}")
+            for result in results:
+                print(f"Result {result}")
+                href = await result.get_attribute("href")
+                print(f"link {href}")
+                if "/huren/" in href:
+                    await run(f"{href}", page) """
         await ctx.close()
         await browser.close()
 
