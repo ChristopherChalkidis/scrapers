@@ -4,6 +4,7 @@ import asyncio
 from playwright_stealth import stealth_async
 import datetime
 import sys
+import time
 
 # URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
 # URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
@@ -245,15 +246,16 @@ async def main():
             link = f"https://www.huurstunt.nl/huren/nederland/p{i+1}"
             await page.goto(link, wait_until="domcontentloaded")
             print(f"Listings page {i+1}")
-            results = await page.query_selector_all("a")
-            for result in results:
-                print(f"result {await result.get_attribute('href')}")
-            """print(f"Links {len(results)}")
-            for result in results:
-                print(f"Result {result}")
+            # search_results = page.locator('a[href*="/huren/"]')
+            await page.wait_for_selector(".boxed-widget--clean > div a")
+            search_results = await page.query_selector_all(
+                ".boxed-widget--clean > div a")
+            print(f"There were {len(search_results)} links found")
+
+            for result in search_results:
                 href = await result.get_attribute("href")
                 print(f"link {href}")
-                if "/huren/" in href:
+                """if "/huren/" in href:
                     await run(f"{href}", page) """
         await ctx.close()
         await browser.close()
