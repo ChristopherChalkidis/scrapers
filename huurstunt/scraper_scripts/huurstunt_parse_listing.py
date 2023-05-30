@@ -206,7 +206,8 @@ async def run(link, page):
     print(f"Cut off: {cut_off_date}")
 
     try:
-        await page.goto(link, wait_until="domcontentloaded")
+        await page.goto(link)
+        print(f"Went to {link}")
         info = await getInfo(cut_off_date, page)
         if info:
             await writeToFile(info)
@@ -222,26 +223,18 @@ async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
     # Use scrapeDate for live - It is set to today()
 
-    """ links = readFile(f"{scrapeDate}Listings.txt")
-    dailyURLs = links.splitlines() """
-
     async with async_playwright() as player:
         # User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
               "AppleWebKit/537.36 (KHTML, like Gecko)"
               "Chrome/111.0.0.0 Safari/537.36")
-        browser = await player.chromium.launch(headless=False, timeout=5000)
+        browser = await player.chromium.launch(headless=True, timeout=5000)
         ctx = await browser.new_context(user_agent=ua)
         page = await ctx.new_page()
         await stealth_async(page)
 
-        """ main_page = "https://www.huurstunt.nl/huren/nederland/"
-        await page.goto(main_page, wait_until="domcontentloaded") """
+        main_page = "https://www.huurstunt.nl"
 
-        """ pages = await page.query_selector_all("a")
-        print(f"Pages {len(pages)}") """
-
-        # await run(test_link, page)
         for i in range(15):
             link = f"https://www.huurstunt.nl/huren/nederland/p{i+1}"
             await page.goto(link, wait_until="domcontentloaded")
@@ -251,12 +244,14 @@ async def main():
             search_results = await page.query_selector_all(
                 ".boxed-widget--clean > div a")
             print(f"There were {len(search_results)} links found")
-
+            links = []
             for result in search_results:
                 href = await result.get_attribute("href")
-                print(f"link {href}")
-                """if "/huren/" in href:
-                    await run(f"{href}", page) """
+                links.append(href)
+                # print(f"link {href}")
+            for link in links:
+                if "/huren/" in href:
+                    await run(f"{main_page}{link}", page)
         await ctx.close()
         await browser.close()
 
