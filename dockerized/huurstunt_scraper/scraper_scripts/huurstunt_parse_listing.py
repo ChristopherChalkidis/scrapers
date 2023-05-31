@@ -15,7 +15,7 @@ async def write_file(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"huurstunt/scraper_scripts/listings/{fileName}", "a") as outfile:
+    with open(f"/app/listings/{fileName}", "a") as outfile:
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(datetime.date.today())
