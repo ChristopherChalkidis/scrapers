@@ -3,6 +3,7 @@ from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
 from datetime import date
+import re
 
 def cleanString(str_):
     return str_.strip().lower().replace(' ', '_')
@@ -34,6 +35,16 @@ async def getDetail(elSelector, page) -> str:
     el = page.locator(elSelector)
     return await el.inner_text()
 
+async def getTypeAddress(page):
+    try:
+        type_address = await getDetail('[id="streetCityName"]', page)
+        rentalType, street, city = type_address.split('\n')
+        rentalType = rentalType[:-9] # It comes as "Type for rent", we drop " for rent" at the end
+        address = street + ',' + city[2:] #city comes as "in city", we drom "in " at the start
+        return cleanString(rentalType), address.strip()
+    except Exception as err:
+        print(f"Error fetching rental type and address {page.url} - {err}")
+
 async def getFeatures(page):
     """Gets the name and specifics of each detail listed on the page
 
@@ -41,6 +52,27 @@ async def getFeatures(page):
     :return A list of small dictionaries of strings of all the details {title: name}
     """
     all_features = []
+
+    rentalType, _ = await getTypeAddress(page)
+    all_features.append({"type_of_rental": rentalType})
+
+    roomsNumber = '1'
+    if rentalType != "room":
+        roomsNumber = await getDetail('[class="rooms-numbers"]', page)
+    all_features.append({"number_of_rooms": roomsNumber.strip()})
+
+    rentPrice = await getDetail('[class="price"]', page)
+    rentPrice = re.findall("\d+", rentPrice.strip())
+    if rentPrice:
+        all_features.append({"rental_price": rentPrice[0]})
+
+    deposit = await getDetail('[class~="costs-overview"] table tr:last-child td:last-child', page)
+    deposit = re.findall("\d+", deposit.strip())
+    if deposit:
+        all_features.append({"deposit": deposit[0]})
+
+    living_area = await getDetail('[class="surface"]', page)
+    all_features.append({"living_area": living_area.strip()})
 
     furnishing = await getDetail('[class="furnishing"]', page)
     furnishing = furnishing.split(':')
@@ -76,16 +108,6 @@ async def getPhotos(page):
 
     return list(photos)
 
-async def getTypeAddress(page):
-    try:
-        type_address = await getDetail('[id="streetCityName"]', page)
-        rentalType, street, city = type_address.split('\n')
-        rentalType = rentalType[:-9] # It comes as "Type for rent", we drop " for rent" at the end
-        address = street + ',' + city[2:] #city comes as "in city", we drom "in " at the start
-        return cleanString(rentalType), address.strip()
-    except Exception as err:
-        print(f"Error fetching rental type and address {page.url} - {err}")
-
 async def getInfo(page):
     """Gets all the informatin for the listing that the page is at
 
@@ -96,22 +118,11 @@ async def getInfo(page):
     try:
         await page.wait_for_selector('[class="row room-details"]', timeout=5000)
 
-        rentalType, address = await getTypeAddress(page)
-        area = await getDetail('[class="surface"]', page)
-        roomsNumber = '1'
-        if rentalType != "room":
-            roomsNumber = await getDetail('[class="rooms-numbers"]', page)
-        rentPrice = await getDetail('[class="price"]', page)
-        deposit = await getDetail('[class~="costs-overview"] table tr:last-child td:last-child', page)
+        _, address = await getTypeAddress(page)
 
-        return {
-            "type_of_rental": rentalType, 
+        return { 
             "address": address,
             "url": page.url,
-            "area": area.strip(),
-            "number_of_rooms": roomsNumber.strip(),
-            "rental_price": rentPrice.strip(),
-            "deposit": deposit.strip(),
             "features": await getFeatures(page),
             "photos": await getPhotos(page)
             }
