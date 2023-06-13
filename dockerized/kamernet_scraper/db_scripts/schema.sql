@@ -1,27 +1,28 @@
 CREATE TABLE IF NOT EXISTS property (
-	property_id INTEGER PRIMARY KEY NOT NULL,
-	address TEXT NOT NULL,
+    property_id INTEGER PRIMARY KEY NOT NULL,
+    address TEXT NOT NULL,
     listed_since TEXT,
     photos TEXT,
     kind_of_house TEXT,
     type_apartment TEXT,
     living_area TEXT,
     number_of_rooms TEXT,
-    number_of_bath_rooms TEXT,
+    number_of_bath_rooms TEXT, 
     number_of_stories TEXT,
-    url TEXT NOT NULL,
+    url TEXT NOT NULL UNIQUE, -- Added UNIQUE constraint
     title TEXT,
     postal_code TEXT,
     year_of_construction TEXT,
     site TEXT NOT NULL,
     scrapped_at TEXT NOT NULL,
     city TEXT NOT NULL,
-    country TEXT NOT NULL
+    country TEXT NOT NULL,
+    updated_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS property_for_rent (
     rent_id INTEGER PRIMARY KEY NOT NULL,
-    property_id INTEGER NOT NULL,
+    property_id INTEGER NOT NULL UNIQUE, -- Added UNIQUE constraint
     rental_price INTEGER NOT NULL,
     deposit INTEGER,
     rental_aggrement TEXT,
@@ -30,7 +31,7 @@ CREATE TABLE IF NOT EXISTS property_for_rent (
 
 CREATE TABLE IF NOT EXISTS property_for_sale (
     sale_id INTEGER PRIMARY KEY NOT NULL,
-    property_id INTEGER NOT NULL,
+    property_id INTEGER NOT NULL UNIQUE, -- Added UNIQUE constraint
     asking_price INTEGER NOT NULL,
     FOREIGN KEY (property_id) REFERENCES property (property_id)
 );
