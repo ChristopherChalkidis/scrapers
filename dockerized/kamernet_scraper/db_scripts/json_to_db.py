@@ -46,7 +46,8 @@ def main():
                 #print(data)
                 # Extract the relevant information from the JSON data
                 address = data["address"]
-                postal_code = data["postal_code"]
+                #postal_code = data["postal_code"]
+                postal_code = "Unknown"
                 url = data["url"]
 
                 #features
