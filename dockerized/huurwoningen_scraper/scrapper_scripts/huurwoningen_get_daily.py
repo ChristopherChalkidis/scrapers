@@ -26,8 +26,8 @@ def writeToFile(links):
 
 async def getNumPages(page) -> int:
     try:
-        numResultsLocator=".h2-search-button"
-        resultsPerPage=18
+        numResultsLocator=".search-list-header__count"
+        resultsPerPage=30
 
         getNumResults = page.locator(numResultsLocator)
         txt = await getNumResults.inner_text()
@@ -40,37 +40,23 @@ async def getNumPages(page) -> int:
         print(f"getNumPages error {page.url} {err}")
 
 
-async def postedRecently(listing):
-    '''
-        Returns True if the listing was posted < 24h ago.
-    '''
-    listing = await listing.query_selector('[class="right tile-dateplaced"]')
-    stamp = await listing.inner_text()
-    if stamp == "New!":
-        return True
-    if stamp[-1] == "h":
-        return True
-    return False
-
 async def getURL(listing):
-    listing = await listing.query_selector('[class="tile-title truncate"]')
+    listing = await listing.query_selector('[class*="listing-search-item__link--title"]')
     link = await listing.get_attribute('href')
+    link = "https://www.huurwoningen.com"+link
     return link
 
 
 async def getLinks(page) -> tuple:
     gemeentenLinks = set()
-    count = 0
+    
     try:
-        listings = await page.query_selector_all('[id^="roomAdvert"]')
-        for listing in listings:
-            wasPostedRecently = await postedRecently(listing)
-            count += 1
-            if wasPostedRecently:
-                link = await getURL(listing)
-                gemeentenLinks.add(link)
-                count = 0
-        return gemeentenLinks, count
+        listings = await page.query_selector_all('[class*="search-list__item--listing"]')
+        for listing in listings:            
+            link = await getURL(listing)
+            gemeentenLinks.add(link)
+
+        return gemeentenLinks
     except Exception as err:
         print(f"getLinks error {page.url()} {err}")
 
@@ -79,33 +65,25 @@ async def main():
     dailyLinks = []
 
     async with async_playwright() as player:
-        browser = await player.chromium.launch(headless=True)
+        browser = await player.chromium.launch(headless=False)
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
             "AppleWebKit/537.36 (KHTML, like Gecko)"
             "Chrome/113.0.0.0 Safari/537.36")
         
         page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
-        link = "https://kamernet.nl/en/for-rent/rooms-netherlands"
+        link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
         await page.goto(link)
         numPages = await getNumPages(page)
-        # print(numPages)        
-        # Once our scraper grabs a [threshold] number of old listings, it should stop:
-        threshold = 3
 
         for i in range(1, numPages+1):
-            link = "https://kamernet.nl/en/for-rent/rooms-netherlands"
+            link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
             if i > 1:
-                link = link + f"?pageno={i}"
+                link = link + f"&page={i}"
 
             await page.goto(link)
-            listingsURLs, count = await getLinks(page)
+            listingsURLs = await getLinks(page)
             dailyLinks.append(listingsURLs)
-
-            # If number of old listing on the page is above the threshold, stop the loop:
-            if count > threshold:
-                print(f"On page {i} there were {count} listings older than one day.")
-                break
 
     allLinks = combineLinkSets(dailyLinks)
     writeToFile(allLinks)
