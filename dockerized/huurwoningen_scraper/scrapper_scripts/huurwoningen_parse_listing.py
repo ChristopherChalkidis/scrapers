@@ -65,7 +65,7 @@ async def getFeatures(page):
     #allFeatureTitles = await page.query_selector_all('[class="listing-features__term"]')
     allFeatureTitles = await page.query_selector_all('[class^="listing-features__description"]')
 
-    allFeatureDetails = await page.query_selector_all('[class="listing-features__main-description"]')
+    allFeatureDetails = await page.query_selector_all('[class^="listing-features__main-description"]')
 
     for i in range(len(allFeatureTitles)):
         #title = await allFeatureTitles[i].inner_text()
@@ -91,19 +91,17 @@ async def getPhotos(page):
         noScriptLinks = await image.query_selector_all('noscript')
         if len(noScriptLinks) > 0:
             noScriptHTML = await noScriptLinks[0].inner_html()
-            imageLinks= noScriptHTML.split("<source")[1].split("srcset=")[1].split("\"")[1] # this gets several links to same image
-            imageSRC = imageLinks.split(', ')[-1].split()[0] # gets the link with maximum width
-            # imageSRC = noScriptHTML.split("<img")[1].split("src=")[1].split("\"")[1]
-            # imageSRC = imageSRC.replace("3x2o-600", "3x2o-1200") #get maximum width
+            # imageLinks= noScriptHTML.split("<source")[1].split("srcset=")[1].split("\"")[1] # this gets several links to same image
+            # imageSRC = imageLinks.split(', ')[-1].split()[0] # gets the link with maximum width
+            imageSRC = noScriptHTML.split("<img")[1].split("src=")[1].split("\"")[1]
             photos.add(imageSRC)
         else:
             # getting links to photos in the carrousel which are displayed
-            imgElement = await image.query_selector_all('source')
-            imageLinks = await imgElement[0].get_attribute('srcset') # this gets several links to same image
-            imageSRC = imageLinks.split(', ')[-1].split()[0] #get maximum width
-            # imgElement = await image.query_selector_all('img')
-            # imageSRC = await imgElement[0].get_attribute('src')
-            # imageSRC = imageSRC.replace("3x2o-600", "3x2o-1200") #get maximum width
+            # imgElement = await image.query_selector_all('source')
+            # imageLinks = await imgElement[0].get_attribute('srcset') # this gets several links to same image
+            # imageSRC = imageLinks.split(', ')[-1].split()[0] # gets the link with maximum width
+            imgElement = await image.query_selector_all('img')
+            imageSRC = await imgElement[0].get_attribute('src')
             photos.add(imageSRC)
 
     return list(photos)
@@ -161,16 +159,15 @@ async def run(link, page):
 async def main():
     """Reads the list of all the rental links for today's listings"""
 
-    #links = readFile(f"/app/listings/{scrapeDate}Listings.txt")
+    links = readFile(f"/app/listings/{scrapeDate}Listings.txt")
     #links = readFile(f"{scrapeDate}Listings.txt")# Needed for testing
-    #dailyURLs = links.splitlines()
-    dailyURLs = ["https://www.huurwoningen.com/huren/almelo/1367597/laan-van-kortrijk/"]
+    dailyURLs = links.splitlines()
 
     async with async_playwright() as player:
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
             "AppleWebKit/537.36 (KHTML, like Gecko)"
             "Chrome/113.0.0.0 Safari/537.36")
-        browser = await player.chromium.launch(headless=False, timeout=10000)
+        browser = await player.chromium.launch(headless=True, timeout=10000)
         ctx = await browser.new_context(user_agent=ua)
         page = await ctx.new_page()
         await stealth_async(page)
