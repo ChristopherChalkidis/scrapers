@@ -26,6 +26,15 @@ services:
       - kamernet-database:/app/database
     ports:
      - "8000:3060"
+  huurwoningen_scraper:
+    build: ./huurwoningen_scraper
+    image: huurwoningen_scraper_image
+    container_name: huurwoningen_scraper_container
+    volumes:
+      - huurwoningen-listings:/app/listings
+      - huurwoningen-database:/app/database
+    ports:
+     - "8000:3090"
 
 # This should remain unchanged
   scheduler:
@@ -36,6 +45,7 @@ services:
       - funda_scrapper
       - pararius_scraper
       - kamernet_scraper
+      - huurwoningen_scraper
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -46,4 +56,6 @@ volumes:
   pararius-database:
   kamernet-listings:
   kamernet-database:
+  huurwoningen-listings:
+  huurwoningen-database:
   display-information:
