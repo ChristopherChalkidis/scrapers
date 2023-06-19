@@ -62,13 +62,11 @@ async def getFeatures(page):
     """
     all_features = []
 
-    #allFeatureTitles = await page.query_selector_all('[class="listing-features__term"]')
     allFeatureTitles = await page.query_selector_all('[class^="listing-features__description"]')
 
     allFeatureDetails = await page.query_selector_all('[class^="listing-features__main-description"]')
 
     for i in range(len(allFeatureTitles)):
-        #title = await allFeatureTitles[i].inner_text()
         title = await allFeatureTitles[i].get_attribute('class')
         title = cleanString(title.split("--")[1])
         if title in renameFeatures:
@@ -129,8 +127,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    #with open(f"/app/listings/{fileName}", "a") as outfile:
-    with open(f"{fileName}", "a") as outfile: #needed for testing
+    with open(f"/app/listings/{fileName}", "a") as outfile:
+    #with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(date.today())
