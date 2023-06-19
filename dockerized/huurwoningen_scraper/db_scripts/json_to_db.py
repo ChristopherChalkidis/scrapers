@@ -95,7 +95,7 @@ def main():
 
                 #Insert data into property_for_rent table
                 #if is_rental_listing(url):
-                if True: #kamernet is only for rentals
+                if True: #huurwoningen is only for rentals
                     cursor.execute('INSERT INTO property_for_rent (property_id, rental_price, deposit, rental_aggrement) VALUES(?,?,?,?) \
                                     ON CONFLICT(property_id)DO UPDATE SET \
                                     rental_price = excluded.rental_price, \
