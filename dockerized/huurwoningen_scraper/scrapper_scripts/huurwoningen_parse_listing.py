@@ -3,7 +3,6 @@ from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
 from datetime import date
-import re
 
 def cleanString(str_):
     return str_.strip().lower().replace(' ', '_')
@@ -35,16 +34,26 @@ async def getDetail(elSelector, page) -> str:
     el = page.locator(elSelector)
     return await el.inner_text()
 
-async def getTypeAddress(page):
+async def getAddress(page):
     try:
-        type_address = await getDetail('[id="streetCityName"]', page)
-        rentalType, street, city = type_address.split('\n')
-        rentalType = rentalType[:-9] # It comes as "Type for rent", we drop " for rent" at the end
-        address = street + ',' + city[2:] #city comes as "in city", we drom "in " at the start
-        return cleanString(rentalType), address.strip()
-    except Exception as err:
-        print(f"Error fetching rental type and address {page.url} - {err}")
+        address = await getDetail('[class="listing-detail-summary__title"]', page)
+        address = address.replace(' in ', ', ')
+        address = address.split(' ', 1)[1]
 
+        postalCode = await getDetail('[class="listing-detail-summary__location"]', page)
+        postalCode = postalCode.split('(')[0]
+        postalCode = postalCode.strip()
+
+        return address, postalCode
+    except Exception as err:
+        print(f"Error fetching rental address {page.url} - {err}")
+
+renameFeatures =  {'for_rent_price': "rental_price",
+                 'offered_since': "listed_since",
+                 'status': 'Te huur',
+                 'surface_area': "living_area",
+                 'construction_period': "year_of_construction",
+                 'number_of_floors': "number_of_stories"}
 async def getFeatures(page):
     """Gets the name and specifics of each detail listed on the page
 
@@ -53,44 +62,19 @@ async def getFeatures(page):
     """
     all_features = []
 
-    rentalType, _ = await getTypeAddress(page)
-    all_features.append({"type_of_rental": rentalType})
+    #allFeatureTitles = await page.query_selector_all('[class="listing-features__term"]')
+    allFeatureTitles = await page.query_selector_all('[class^="listing-features__description"]')
 
-    roomsNumber = '1'
-    if rentalType != "room":
-        roomsNumber = await getDetail('[class="rooms-numbers"]', page)
-    all_features.append({"number_of_rooms": roomsNumber.strip()})
+    allFeatureDetails = await page.query_selector_all('[class="listing-features__main-description"]')
 
-    rentPrice = await getDetail('[class="price"]', page)
-    rentPrice = re.findall("\d+", rentPrice.strip())
-    if rentPrice:
-        all_features.append({"rental_price": rentPrice[0]})
-
-    deposit = await getDetail('[class~="costs-overview"] table tr:last-child td:last-child', page)
-    deposit = re.findall("\d+", deposit.strip())
-    if deposit:
-        all_features.append({"deposit": deposit[0]})
-
-    living_area = await getDetail('[class="surface"]', page)
-    all_features.append({"living_area": living_area.strip()})
-
-    furnishing = await getDetail('[class="furnishing"]', page)
-    furnishing = furnishing.split(':')
-    all_features.append({cleanString(furnishing[0]): cleanString(furnishing[1])})
-
-    availability = await getDetail('[class="availability"]', page)
-    availability = availability.split(':')
-    all_features.append({cleanString(availability[0]): availability[1].strip()})
-
-    details_section = page.locator('[class$="room-details-info"]')
-    details_info = await details_section.inner_text()
-    details_info = details_info.split('\n')
-    i=1
-    while i < len(details_info):
-        title = cleanString(details_info[i])
-        detail = cleanString(details_info[i+1])
+    for i in range(len(allFeatureTitles)):
+        #title = await allFeatureTitles[i].inner_text()
+        title = await allFeatureTitles[i].get_attribute('class')
+        title = cleanString(title.split("--")[1])
+        if title in renameFeatures:
+            title= renameFeatures[title]
+        detail = await allFeatureDetails[i].inner_text()
         all_features.append({title: detail})
-        i+=2
 
     return all_features
 
@@ -101,10 +85,26 @@ async def getPhotos(page):
 
     :return A list containing the src to all the photos of the current listing"""
     photos = set()
-    images = await page.query_selector_all('[class="item gallery-item"]')
+    images = await page.query_selector_all('[class="picture picture--media-carrousel"]')
     for image in images:
-        imageSRC = await image.get_attribute('href')
-        photos.add(imageSRC)
+        # getting links to photos in the carrousel which are NOT displayed
+        noScriptLinks = await image.query_selector_all('noscript')
+        if len(noScriptLinks) > 0:
+            noScriptHTML = await noScriptLinks[0].inner_html()
+            imageLinks= noScriptHTML.split("<source")[1].split("srcset=")[1].split("\"")[1] # this gets several links to same image
+            imageSRC = imageLinks.split(', ')[-1].split()[0] # gets the link with maximum width
+            # imageSRC = noScriptHTML.split("<img")[1].split("src=")[1].split("\"")[1]
+            # imageSRC = imageSRC.replace("3x2o-600", "3x2o-1200") #get maximum width
+            photos.add(imageSRC)
+        else:
+            # getting links to photos in the carrousel which are displayed
+            imgElement = await image.query_selector_all('source')
+            imageLinks = await imgElement[0].get_attribute('srcset') # this gets several links to same image
+            imageSRC = imageLinks.split(', ')[-1].split()[0] #get maximum width
+            # imgElement = await image.query_selector_all('img')
+            # imageSRC = await imgElement[0].get_attribute('src')
+            # imageSRC = imageSRC.replace("3x2o-600", "3x2o-1200") #get maximum width
+            photos.add(imageSRC)
 
     return list(photos)
 
@@ -116,12 +116,13 @@ async def getInfo(page):
     :return A dictionary containing the information: title, address, url, features, and photos
     """
     try:
-        await page.wait_for_selector('[class="row room-details"]', timeout=5000)
+        await page.wait_for_selector('[class="page__content"]', timeout=5000)
 
-        _, address = await getTypeAddress(page)
+        address, postalCode = await getAddress(page)
 
         return { 
             "address": address,
+            "postal_code": postalCode,
             "url": page.url,
             "features": await getFeatures(page),
             "photos": await getPhotos(page)
@@ -129,16 +130,17 @@ async def getInfo(page):
     except Exception as err:
         print(f"Couldn't find title {page.url} - {err}")
 
-scrapeDate = str(date.today())
 async def writeJson(fileName, listingInfo):
     """Writes the listing info to a file with the passed in fileName
 
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"/app/listings/{fileName}", "a") as outfile:
+    #with open(f"/app/listings/{fileName}", "a") as outfile:
+    with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
+scrapeDate = str(date.today())
 async def writeToFile(listingInfo):
     """Writes listing info to a json file
 
@@ -159,20 +161,21 @@ async def run(link, page):
 async def main():
     """Reads the list of all the rental links for today's listings"""
 
-    links = readFile(f"/app/listings/{scrapeDate}Listings.txt")
-    dailyURLs = links.splitlines()
+    #links = readFile(f"/app/listings/{scrapeDate}Listings.txt")
+    #links = readFile(f"{scrapeDate}Listings.txt")# Needed for testing
+    #dailyURLs = links.splitlines()
+    dailyURLs = ["https://www.huurwoningen.com/huren/almelo/1367597/laan-van-kortrijk/"]
 
     async with async_playwright() as player:
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
             "AppleWebKit/537.36 (KHTML, like Gecko)"
             "Chrome/113.0.0.0 Safari/537.36")
-        browser = await player.chromium.launch(headless=True, timeout=10000)
+        browser = await player.chromium.launch(headless=False, timeout=10000)
         ctx = await browser.new_context(user_agent=ua)
         page = await ctx.new_page()
         await stealth_async(page)
 
         for link in dailyURLs:
-        #for link in dailyURLs[:10]: #test
             await run(link, page)
 
         await ctx.close()
