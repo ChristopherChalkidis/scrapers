@@ -164,7 +164,7 @@ async def main():
               "Chrome/111.0.0.0 Safari/537.36")
         page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
-        link = "https://www.kamer.nl/huren/?created=3"
+        link = "https://www.kamer.nl/huren/?created=0"
         await page.goto(link)
         numPages = await getNumPages(page)
         if numPages:
@@ -172,7 +172,7 @@ async def main():
 
             for i in range(2, numPages+1):
                 await page.goto(
-                    f"https://www.kamer.nl/en/rent/?created=0$page={i}",
+                    f"https://www.kamer.nl/huren/?created=0$page={i}",
                     referer="https://google.com/")
                 dailyLinks.append(await getLinks(page))
     allLinks = combineLinkSets(dailyLinks)
