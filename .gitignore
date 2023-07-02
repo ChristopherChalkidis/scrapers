@@ -134,3 +134,5 @@ dmypy.json
 configurations.ini
 
 geckodriver.log
+
+dockerized/kamer_scraper/scraper_scripts/listings/
