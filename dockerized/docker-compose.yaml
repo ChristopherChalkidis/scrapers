@@ -26,6 +26,15 @@ services:
       - huurstunt-database:/app/database
     ports:
       - "8000:3060"
+  kamer_scraper:
+    build: ./kamer_scraper
+    image: kamer_scraper_image
+    container_name: kamer_scraper_container
+    volumes:
+      - kamer-listings:/app/listings
+      - kamer-database:/app/database
+    ports:
+      - "8000:3090"
 
 # This should remain unchanged
   scheduler:
@@ -47,3 +56,5 @@ volumes:
   display-information:
   huurstunt-listings:
   huurstunt-database:
+  kamer-listings:
+  kamer-database:
