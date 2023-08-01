@@ -46,8 +46,9 @@ def main():
                 #print(data)
                 # Extract the relevant information from the JSON data
                 address = data["address"]
-                postal_code = data["postal_code"]
+                # postal_code = data["postal_code"]
                 url = data["url"]
+                type_apartment = data["type_apartment"]
 
                 #features
                 listed_since = get_feature_value(data["features"], "listed_since")
@@ -62,7 +63,6 @@ def main():
                 rental_aggrement = get_feature_value(data["features"], "rental_agreement")
                 asking_price = get_feature_value(data["features"], "asking_price")
                 kind_of_house = get_feature_value(data["features"], "kind_of_house")
-                type_apartment = get_feature_value(data["features"], "type_apartment")
                 scrapped_at = file[:19]
                 site = urlparse(url)
                 site = site.netloc.split(".")[1]
