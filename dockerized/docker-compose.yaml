@@ -34,6 +34,15 @@ services:
       - huurwoningen-listings:/app/listings
       - huurwoningen-database:/app/database
     ports:
+     - "8000:3080"
+  directwonen_scraper:
+    build: ./directwonen_scraper
+    image: directwonen_scraper_image
+    container_name: directwonen_scraper_container
+    volumes:
+      - directwonen-listings:/app/listings
+      - directwonen-database:/app/database
+    ports:
      - "8000:3090"
 
 # This should remain unchanged
@@ -46,6 +55,7 @@ services:
       - pararius_scraper
       - kamernet_scraper
       - huurwoningen_scraper
+      - directwonen_scraper
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -58,4 +68,6 @@ volumes:
   kamernet-database:
   huurwoningen-listings:
   huurwoningen-database:
+  directwonen-listings:
+  directwonen-database:
   display-information:
