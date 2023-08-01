@@ -121,8 +121,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    #with open(f"/app/listings/{fileName}", "a") as outfile:
-    with open(f"{fileName}", "a") as outfile: #needed for testing
+    with open(f"/app/listings/{fileName}", "a") as outfile:
+    # with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(date.today())
@@ -168,13 +168,13 @@ async def main():
         numPages = await getNumPages(page)
         print(numPages)
 
-        await getListings(page)
+        # await getListings(page)
 
-        # for i in range(2, numPages+1):
-        #     link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
+        for i in range(2, numPages+1):
+            link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
 
-        #     await page.goto(link)
-        #     await getListings(page)
+            await page.goto(link)
+            await getListings(page)
 
 if __name__ == "__main__":
     asyncio.run(main())
