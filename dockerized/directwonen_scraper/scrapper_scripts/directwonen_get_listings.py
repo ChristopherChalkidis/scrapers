@@ -66,11 +66,12 @@ async def isSmartOnly(page):
     """Return whether the listing is Smart Only (i.e. reserved to view by subscribers)
     :parm {page object} page - The browser page displaying a listing
     """
-    label=  await page.query_selector_all('[class*="label-premium"]')
+    label=  await page.query_selector('[class*="label-premium"]')
     if label:
-        return True
-    else:
-        return False
+        label_txt = await label.inner_text()
+        if "Smart only" in label_txt:
+            return True
+    return False
 
 async def getPhotos(page, isRestricted= True):
     """Gets all the photos on the page if they are photos of the listing
@@ -126,8 +127,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    # with open(f"/app/listings/{fileName}", "a") as outfile:
-    with open(f"{fileName}", "a") as outfile: #needed for testing
+    with open(f"/app/listings/{fileName}", "a") as outfile:
+    # with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(date.today())
@@ -139,7 +140,18 @@ async def writeToFile(listingInfo):
     fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
     await writeJson(fileName.replace("/", "-"), listingInfo)
 
-async def getListings(page):
+async def parseUnrestrictedListings(page, non_restricted_links, non_restricted_info):
+    for i, url in enumerate(non_restricted_links):
+        info = non_restricted_info[i]
+        await page.goto(url, wait_until="domcontentloaded")
+        try:
+            photos = await getPhotos(page, False)
+            info["photos"] = photos
+            await writeToFile(info)
+        except Exception as err:
+            print(f"Error in getting info of non restricted {link}: {err}")
+
+async def getListings(page, check_unrestricted= True):
     """
     Scrape listings' info from the search page
     """
@@ -152,24 +164,16 @@ async def getListings(page):
         resctriced = await isSmartOnly(listing)
 
         info = await getInfo(listing, link)
-        if not resctriced:
+        if not resctriced & check_unrestricted:
             non_restricted_links.append(link)
             non_restricted_info.append(info)
             continue
         if info:
             await writeToFile(info)
 
-    print(non_restricted_links)
-    
-    # for i, url in enumerate(non_restricted_links):
-    #     info = non_restricted_info[i]
-    #     await page.goto(url, wait_until="domcontentloaded")
-    #     try:
-    #         photos = await getPhotos(page, False)
-    #         info["photos"] = photos
-    #         await writeToFile(info)
-    #     except Exception as err:
-    #         print(f"Error in getting info of non restricted {link}: {err}")
+    print(len(non_restricted_links))
+    if check_unrestricted:
+        await parseUnrestrictedListings(page, non_restricted_links, non_restricted_info)
 
 
 async def main():
@@ -190,13 +194,17 @@ async def main():
         numPages = await getNumPages(page)
         print(numPages)
 
+        # await getListings(page)
+
+        # for i in range(2, numPages+1):
+        #     link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
+
+        #     await page.goto(link)
+        #     await getListings(page)
+
+        link = "https://directwonen.nl/huurwoningen-huren/nederland?pageno=6"
+        await page.goto(link)
         await getListings(page)
-
-        for i in range(2, numPages+1):
-            link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
-
-            await page.goto(link)
-            await getListings(page)
 
 if __name__ == "__main__":
     asyncio.run(main())
