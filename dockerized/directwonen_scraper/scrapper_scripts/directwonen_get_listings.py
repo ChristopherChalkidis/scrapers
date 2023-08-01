@@ -62,11 +62,16 @@ async def getFeatures(page):
 
     return all_features
 
-def isSmartOnly():
+async def isSmartOnly(page):
     """Return whether the listing is Smart Only (i.e. reserved to view by subscribers)
     :parm {page object} page - The browser page displaying a listing
     """
-    return True
+    try:
+        await page.query_selector('[class*="smart-only"]')
+    except:
+        return False
+    else:
+        return True
 
 async def getPhotos(page):
     """Gets all the photos on the page if they are photos of the listing
@@ -75,7 +80,7 @@ async def getPhotos(page):
 
     :return A list containing the src to all the photos of the current listing"""
     photos = set()
-    isRestricted = isSmartOnly()
+    isRestricted = await isSmartOnly(page)
     if isRestricted:
         image = await page.query_selector('[class*="search-photo"] img')
         imageSRC = await image.get_attribute('src')
@@ -117,8 +122,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"/app/listings/{fileName}", "a") as outfile:
-    # with open(f"{fileName}", "a") as outfile: #needed for testing
+    # with open(f"/app/listings/{fileName}", "a") as outfile:
+    with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(date.today())
@@ -166,11 +171,11 @@ async def main():
 
         await getListings(page)
 
-        for i in range(2, numPages+1):
-            link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
+        # for i in range(2, numPages+1):
+        #     link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
 
-            await page.goto(link)
-            await getListings(page)
+        #     await page.goto(link)
+        #     await getListings(page)
 
 if __name__ == "__main__":
     asyncio.run(main())
