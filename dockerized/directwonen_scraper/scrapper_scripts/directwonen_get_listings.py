@@ -66,27 +66,31 @@ async def isSmartOnly(page):
     """Return whether the listing is Smart Only (i.e. reserved to view by subscribers)
     :parm {page object} page - The browser page displaying a listing
     """
-    try:
-        await page.query_selector('[class*="smart-only"]')
-    except:
-        return False
-    else:
+    label=  await page.query_selector('[class*="smart-only"]')
+    if label:
         return True
+    else:
+        return False
 
-async def getPhotos(page):
+async def getPhotos(page, isRestricted= True):
     """Gets all the photos on the page if they are photos of the listing
 
     :param {page object} page - The browser page displaying a listing
 
     :return A list containing the src to all the photos of the current listing"""
     photos = set()
-    isRestricted = await isSmartOnly(page)
     if isRestricted:
         image = await page.query_selector('[class*="search-photo"] img')
         imageSRC = await image.get_attribute('src')
         photos.add(imageSRC)
+    else:
+        images = await page.query_selector_all('[class*="apartment-slider slider"] div img')
+        for image in images:
+            imageSRC = await image.get_attribute('src')
+            photos.add(imageSRC)
 
     return list(photos)
+
 
 async def getAddress(page):
     address_txt = await page.query_selector('[class*="inner-content"]')
@@ -140,16 +144,39 @@ async def getListings(page):
     Scrape listings' info from the search page
     """
     listings = await page.query_selector_all('[class*="rowSearchResultRoom"]')
-    print(len(listings))
+    non_restricted_links = []
+    non_restricted_info = []
 
     for listing in listings:
         link = await listing.get_attribute('href')
+
         try:
             info = await getInfo(listing, link)
-            if info:
-                await writeToFile(info)
         except Exception as err:
-            print(f"Error {link} {err}")
+            print(f"Error getting {link}'s info: {err}")
+        
+        resctriced = await isSmartOnly(listing)
+        if not resctriced:
+            non_restricted_links.append(link)
+            non_restricted_info.append(info)
+            continue
+        
+        if info:
+            try:
+                await writeToFile(info)
+            except Exception as err:
+                print(f"Error writing {link}'s info: {err}")
+    
+    # for i, url in enumerate(non_restricted_links):
+    #     info = non_restricted_info[i]
+    #     await page.goto(url, wait_until="domcontentloaded")
+    #     try:
+    #         photos = await getPhotos(page, False)
+    #         info["photos"] = photos
+    #         await writeToFile(info)
+    #     except Exception as err:
+    #         print(f"Error in getting info of non restricted {link}: {err}")
+
 
 async def main():
     async with async_playwright() as player:
