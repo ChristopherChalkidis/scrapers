@@ -1,5 +1,5 @@
 import re
-import math
+import json
 from playwright.async_api import async_playwright
 import asyncio
 from undetected_playwright import stealth_async
@@ -12,17 +12,6 @@ def combineLinkSets(linksSets):
         for link in links:
             linksList.append(link)
     return linksList
-
-scrapeDate = str(date.today())
-# def writeToFile(links):
-#     try:
-#         with open(f"/app/listings/{scrapeDate}Listings.txt", "w") as outfile:
-#         # with open(f"{scrapeDate}Listings.txt", "w") as outfile: # Needed for testing
-#             for link in links:
-#                 outfile.write(link+"\n")
-#         print("File write successful!")
-#     except Exception as err:
-#         print(f"writeToFile error {err}")
 
 def extractNumerical(txt):
     """
@@ -108,7 +97,7 @@ async def getAddress(page):
     return address
 
 
-async def getInfo(page):
+async def getInfo(page, link):
     """Gets all the informatin for the listing
 
     :param {page object} page - The browser page displaying a listing
@@ -117,16 +106,33 @@ async def getInfo(page):
     """
     try:
         address = await getAddress(page)
-        url = await page.get_attribute('href')
 
         return { 
             "address": address,
-            "url": url,
+            "url": link,
             "features": await getFeatures(page),
             "photos": await getPhotos(page)
             }
     except Exception as err:
-        print(f"Couldn't find title {url} - {err}")
+        print(f"Couldn't find title {link} - {err}")
+
+async def writeJson(fileName, listingInfo):
+    """Writes the listing info to a file with the passed in fileName
+    :param {string} fileName - The string containing the name the file will receive
+    :param {dict} listingInfo - A dictionary containing all the information for each listing
+    """
+    #with open(f"/app/listings/{fileName}", "a") as outfile:
+    with open(f"{fileName}", "a") as outfile: #needed for testing
+        outfile.write(json.dumps(listingInfo, indent=4))
+
+scrapeDate = str(date.today())
+async def writeToFile(listingInfo):
+    """Writes listing info to a json file
+
+    :param {dict} listingInfo - A dictionary containing all the information for each listing
+    """
+    fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
+    await writeJson(fileName.replace("/", "-"), listingInfo)
 
 async def getListings(page):
     """
@@ -134,31 +140,17 @@ async def getListings(page):
     """
     listings = await page.query_selector_all('[class*="rowSearchResultRoom"]')
     print(len(listings))
-    urls = []
+
     for listing in listings:
-        url = await listing.get_attribute('href')
-        urls.append(url)
-    print(len(urls))
-    return listings
-
-
-async def getLinks(page) -> tuple:
-    gemeentenLinks = set()
-    
-    try:
-        listings = await page.query_selector_all('[class*="search-list__item--listing"]')
-        for listing in listings:            
-            link = await getURL(listing)
-            gemeentenLinks.add(link)
-
-        return gemeentenLinks
-    except Exception as err:
-        print(f"getLinks error {page.url()} {err}")
-
+        link = await listing.get_attribute('href')
+        try:
+            info = await getInfo(listing, link)
+            if info:
+                await writeToFile(info)
+        except Exception as err:
+            print(f"Error {link} {err}")
 
 async def main():
-    dailyLinks = []
-
     async with async_playwright() as player:
         browser = await player.chromium.launch(headless=False)
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
@@ -175,22 +167,14 @@ async def main():
         await page.wait_for_url('https://directwonen.nl/en/rentals-for-rent/nederland?Recency=today')
         numPages = await getNumPages(page)
         print(numPages)
-        listings = await getListings(page)
-        
-        info = await getInfo(listings[0])
-        print(info)
 
-    #     # for i in range(1, numPages+1):
-    #     #     link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
-    #     #     if i > 1:
-    #     #         link = link + f"&page={i}"
+        await getListings(page)
 
-    #     #     await page.goto(link)
-    #     #     listingsURLs = await getLinks(page)
-    #     #     dailyLinks.append(listingsURLs)
+        # for i in range(2, numPages+1):
+        #     link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
 
-    # allLinks = combineLinkSets(dailyLinks)
-    # writeToFile(allLinks)
+        #     await page.goto(link)
+        #     await getListings(page)
 
 if __name__ == "__main__":
     asyncio.run(main())
