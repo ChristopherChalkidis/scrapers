@@ -14,15 +14,24 @@ def combineLinkSets(linksSets):
     return linksList
 
 scrapeDate = str(date.today())
-def writeToFile(links):
-    try:
-        with open(f"/app/listings/{scrapeDate}Listings.txt", "w") as outfile:
-        # with open(f"{scrapeDate}Listings.txt", "w") as outfile: # Needed for testing
-            for link in links:
-                outfile.write(link+"\n")
-        print("File write successful!")
-    except Exception as err:
-        print(f"writeToFile error {err}")
+# def writeToFile(links):
+#     try:
+#         with open(f"/app/listings/{scrapeDate}Listings.txt", "w") as outfile:
+#         # with open(f"{scrapeDate}Listings.txt", "w") as outfile: # Needed for testing
+#             for link in links:
+#                 outfile.write(link+"\n")
+#         print("File write successful!")
+#     except Exception as err:
+#         print(f"writeToFile error {err}")
+
+def extractNumerical(txt):
+    """
+    Extracts a number from a text
+    :param txt (str) string that include a least one number
+    :returns  (int) the first number in the string 
+    """
+    num = re.findall("\\d+", txt)
+    return int(num[0])
 
 async def getNumPages(page) -> int:
     try:
@@ -30,19 +39,107 @@ async def getNumPages(page) -> int:
 
         getNumResults = page.locator(numResultsLocator)
         txt = await getNumResults.inner_text()
-        pat = "\\d+"
-        numResults = re.findall(pat, txt)
-        numResults = int(numResults[0])
+        numResults = extractNumerical(txt)
         return numResults
 
     except Exception as err:
         print(f"getNumPages error {page.url} {err}")
 
+async def getDetail(elSelector, page) -> str:
+    """Gets the string of the specified selector
 
-async def getURL(listing):
-    listing = await listing.query_selector('[class*="listing-search-item__link--title"]')
-    link = await listing.get_attribute('href')
-    return link
+    :param {string} elSelector - The selector to find the specified element
+    :param {page object} page - The browser page displaying a listing
+    :return The text of the element specified
+    """
+    el = await page.query_selector(elSelector)
+    return await el.inner_text()
+
+async def getFeatures(page):
+    """Gets the name and specifics of each detail listed on the page
+
+    :param {page object} page - The browser page displaying a listing
+    :return A list of small dictionaries of strings of all the details {title: name}
+    """
+    all_features = []
+
+    number_of_rooms = await getDetail('[class*="advert-roomno"]', page)
+    all_features.append({"number_of_rooms": number_of_rooms})
+
+    living_area = await getDetail('[class*="advert-surface"]', page)
+    all_features.append({"living_area": living_area})
+
+    # furnishing = await getDetail('[class*="advert-unfurnished"]', page)
+    # all_features.append({"furnishing": furnishing})
+
+    available_from = await getDetail('[class*="available-date"]', page)
+    all_features.append({"available_from": available_from})
+
+    rental_price = await getDetail('[class*="price-wrapper"]', page)
+    rental_price = extractNumerical(rental_price)
+    all_features.append({"rental_price": rental_price})
+
+    return all_features
+
+def isSmartOnly():
+    """Return whether the listing is Smart Only (i.e. reserved to view by subscribers)
+    :parm {page object} page - The browser page displaying a listing
+    """
+    return True
+
+async def getPhotos(page):
+    """Gets all the photos on the page if they are photos of the listing
+
+    :param {page object} page - The browser page displaying a listing
+
+    :return A list containing the src to all the photos of the current listing"""
+    photos = set()
+    isRestricted = isSmartOnly()
+    if isRestricted:
+        image = await page.query_selector('[class*="search-photo"] img')
+        imageSRC = await image.get_attribute('src')
+        photos.add(imageSRC)
+
+    return list(photos)
+
+async def getAddress(page):
+    address = await page.query_selector('[class*="inner-content"]')
+    address = await address.get_attribute('title')
+    return address
+
+
+async def getInfo(page):
+    """Gets all the informatin for the listing
+
+    :param {page object} page - The browser page displaying a listing
+
+    :return A dictionary containing the information: title, address, url, features, and photos
+    """
+    try:
+        address = await getAddress(page)
+        url = await page.get_attribute('href')
+
+        return { 
+            "address": address,
+            "url": url,
+            "features": await getFeatures(page),
+            "photos": await getPhotos(page)
+            }
+    except Exception as err:
+        print(f"Couldn't find title {url} - {err}")
+
+async def getListings(page):
+    """
+    Gets a list of listing from a page
+    """
+    listings = await page.query_selector_all('[class*="rowSearchResultRoom"]')
+    print(len(listings))
+    urls = []
+    for listing in listings:
+        url = await listing.get_attribute('href')
+        urls.append(url)
+    print(len(urls))
+    return listings
 
 
 async def getLinks(page) -> tuple:
@@ -70,15 +167,18 @@ async def main():
         
         page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
-        #link = "https://directwonen.nl/en/rentals-for-rent/nederland?Recency=today"
-        # link = "https://directwonen.nl/huurwoningen-huren/nederland?Recency=vandaag"
         link = "https://directwonen.nl/en/rentals-for-rent/nederland"
         await page.goto(link, wait_until="domcontentloaded")
+        await page.locator('[onclick="setTilesView(false);"]').click()
         await page.locator("[name='AdvertRecencyId']").select_option("1")
         await page.locator("[id='btnSearchInId']").click()
         await page.wait_for_url('https://directwonen.nl/en/rentals-for-rent/nederland?Recency=today')
         numPages = await getNumPages(page)
         print(numPages)
+        listings = await getListings(page)
+        
+        info = await getInfo(listings[0])
+        print(info)
 
     #     # for i in range(1, numPages+1):
     #     #     link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
