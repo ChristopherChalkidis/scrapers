@@ -26,15 +26,14 @@ def writeToFile(links):
 
 async def getNumPages(page) -> int:
     try:
-        numResultsLocator=".search-list-header__count"
-        resultsPerPage=30
+        numResultsLocator=".pager a:nth-last-child(2)"
 
         getNumResults = page.locator(numResultsLocator)
         txt = await getNumResults.inner_text()
         pat = "\\d+"
         numResults = re.findall(pat, txt)
         numResults = int(numResults[0])
-        return math.ceil(numResults/resultsPerPage)
+        return numResults
 
     except Exception as err:
         print(f"getNumPages error {page.url} {err}")
@@ -64,29 +63,34 @@ async def main():
     dailyLinks = []
 
     async with async_playwright() as player:
-        browser = await player.chromium.launch(headless=True)
+        browser = await player.chromium.launch(headless=False)
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
             "AppleWebKit/537.36 (KHTML, like Gecko)"
             "Chrome/113.0.0.0 Safari/537.36")
         
         page = await browser.new_page(user_agent=ua)
         await stealth_async(page)
-        #link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
+        #link = "https://directwonen.nl/en/rentals-for-rent/nederland?Recency=today"
+        # link = "https://directwonen.nl/huurwoningen-huren/nederland?Recency=vandaag"
         link = "https://directwonen.nl/en/rentals-for-rent/nederland"
-        await page.goto(link)
+        await page.goto(link, wait_until="domcontentloaded")
+        await page.locator("[name='AdvertRecencyId']").select_option("1")
+        await page.locator("[id='btnSearchInId']").click()
+        await page.wait_for_url('https://directwonen.nl/en/rentals-for-rent/nederland?Recency=today')
         numPages = await getNumPages(page)
+        print(numPages)
 
-        # for i in range(1, numPages+1):
-        #     link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
-        #     if i > 1:
-        #         link = link + f"&page={i}"
+    #     # for i in range(1, numPages+1):
+    #     #     link = "https://www.huurwoningen.com/aanbod-huurwoningen/?since=1"
+    #     #     if i > 1:
+    #     #         link = link + f"&page={i}"
 
-        #     await page.goto(link)
-        #     listingsURLs = await getLinks(page)
-        #     dailyLinks.append(listingsURLs)
+    #     #     await page.goto(link)
+    #     #     listingsURLs = await getLinks(page)
+    #     #     dailyLinks.append(listingsURLs)
 
-    allLinks = combineLinkSets(dailyLinks)
-    writeToFile(allLinks)
+    # allLinks = combineLinkSets(dailyLinks)
+    # writeToFile(allLinks)
 
 if __name__ == "__main__":
     asyncio.run(main())
