@@ -66,7 +66,7 @@ async def isSmartOnly(page):
     """Return whether the listing is Smart Only (i.e. reserved to view by subscribers)
     :parm {page object} page - The browser page displaying a listing
     """
-    label=  await page.query_selector('[class*="smart-only"]')
+    label=  await page.query_selector_all('[class*="label-premium"]')
     if label:
         return True
     else:
@@ -149,23 +149,17 @@ async def getListings(page):
 
     for listing in listings:
         link = await listing.get_attribute('href')
-
-        try:
-            info = await getInfo(listing, link)
-        except Exception as err:
-            print(f"Error getting {link}'s info: {err}")
-        
         resctriced = await isSmartOnly(listing)
+
+        info = await getInfo(listing, link)
         if not resctriced:
             non_restricted_links.append(link)
             non_restricted_info.append(info)
             continue
-        
         if info:
-            try:
-                await writeToFile(info)
-            except Exception as err:
-                print(f"Error writing {link}'s info: {err}")
+            await writeToFile(info)
+
+    print(non_restricted_links)
     
     # for i, url in enumerate(non_restricted_links):
     #     info = non_restricted_info[i]
@@ -198,11 +192,11 @@ async def main():
 
         await getListings(page)
 
-        # for i in range(2, numPages+1):
-        #     link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
+        for i in range(2, numPages+1):
+            link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
 
-        #     await page.goto(link)
-        #     await getListings(page)
+            await page.goto(link)
+            await getListings(page)
 
 if __name__ == "__main__":
     asyncio.run(main())
