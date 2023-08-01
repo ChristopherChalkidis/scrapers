@@ -106,7 +106,6 @@ async def getInfo(page, link):
     """Gets all the informatin for the listing
 
     :param {page object} page - The browser page displaying a listing
-
     :return A dictionary containing the information: title, address, url, features, and photos
     """
     try:
@@ -127,8 +126,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"/app/listings/{fileName}", "a") as outfile:
-    # with open(f"{fileName}", "a") as outfile: #needed for testing
+    # with open(f"/app/listings/{fileName}", "a") as outfile:
+    with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(date.today())
@@ -141,6 +140,15 @@ async def writeToFile(listingInfo):
     await writeJson(fileName.replace("/", "-"), listingInfo)
 
 async def parseUnrestrictedListings(page, non_restricted_links, non_restricted_info):
+    """
+    Gets more photos from listings when access is available.
+    parameters:
+        - page (page object): The browser page displaying search results
+        - non_restricted_links (list): list of links to unrestricted listings
+        - non_restricted_info (list): info scraped from first page of results corresponding to each listing
+    returns: 
+        None. Function writes results to file. 
+    """
     for i, url in enumerate(non_restricted_links):
         info = non_restricted_info[i]
         await page.goto(url, wait_until="domcontentloaded")
@@ -151,9 +159,14 @@ async def parseUnrestrictedListings(page, non_restricted_links, non_restricted_i
         except Exception as err:
             print(f"Error in getting info of non restricted {url}: {err}")
 
-async def getListings(page, check_unrestricted= True):
+async def getListings(page, prope_unrestricted= True):
     """
-    Scrape listings' info from the search page
+    Scrape info about listings and writes it to files.
+    parameters:
+        - page (page object): The browser page displaying search results
+        - prope_unrestricted (boolean): Get more info from listings when access is available.
+    returns: 
+        None. Function writes results to file. 
     """
     listings = await page.query_selector_all('[class*="rowSearchResultRoom"]')
     non_restricted_links = []
@@ -164,7 +177,7 @@ async def getListings(page, check_unrestricted= True):
         resctriced = await isSmartOnly(listing)
 
         info = await getInfo(listing, link)
-        if not resctriced & check_unrestricted:
+        if not resctriced & prope_unrestricted:
             non_restricted_links.append(link)
             non_restricted_info.append(info)
             continue
@@ -172,7 +185,7 @@ async def getListings(page, check_unrestricted= True):
             await writeToFile(info)
 
     print(len(non_restricted_links))
-    if check_unrestricted:
+    if prope_unrestricted:
         await parseUnrestrictedListings(page, non_restricted_links, non_restricted_info)
 
 
@@ -194,17 +207,13 @@ async def main():
         numPages = await getNumPages(page)
         print(numPages)
 
-        # await getListings(page)
+        await getListings(page, prope_unrestricted=True)
 
-        # for i in range(2, numPages+1):
-        #     link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
+        for i in range(2, numPages+1):
+            link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
 
-        #     await page.goto(link)
-        #     await getListings(page)
-
-        link = "https://directwonen.nl/huurwoningen-huren/nederland?pageno=6"
-        await page.goto(link)
-        await getListings(page)
+            await page.goto(link)
+            await getListings(page, prope_unrestricted=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
