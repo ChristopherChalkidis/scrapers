@@ -149,7 +149,7 @@ async def parseUnrestrictedListings(page, non_restricted_links, non_restricted_i
             info["photos"] = photos
             await writeToFile(info)
         except Exception as err:
-            print(f"Error in getting info of non restricted {link}: {err}")
+            print(f"Error in getting info of non restricted {url}: {err}")
 
 async def getListings(page, check_unrestricted= True):
     """
