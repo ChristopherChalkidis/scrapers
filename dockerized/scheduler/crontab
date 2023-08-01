@@ -3,4 +3,5 @@
 0 8 * * * docker restart pararius_scraper_container
 0 9 * * * docker restart kamernet_scraper_container
 0 9 * * * docker restart huurwoningen_scraper_container
+0 23 * * * docker restart directwonen_scraper_container
 # extra line to make this a valid crontab.
