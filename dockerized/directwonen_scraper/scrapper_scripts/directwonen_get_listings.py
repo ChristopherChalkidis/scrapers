@@ -136,7 +136,7 @@ async def writeToFile(listingInfo):
 
 async def getListings(page):
     """
-    Gets a list of listing from a page
+    Scrape listings' info from the search page
     """
     listings = await page.query_selector_all('[class*="rowSearchResultRoom"]')
     print(len(listings))
@@ -168,7 +168,7 @@ async def main():
         numPages = await getNumPages(page)
         print(numPages)
 
-        # await getListings(page)
+        await getListings(page)
 
         for i in range(2, numPages+1):
             link = f"https://directwonen.nl/en/rentals-for-rent/nederland?pageno={i}"
