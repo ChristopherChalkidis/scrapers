@@ -5,14 +5,6 @@ import asyncio
 from undetected_playwright import stealth_async
 from datetime import date
 
-
-def combineLinkSets(linksSets):
-    linksList = []
-    for links in linksSets:
-        for link in links:
-            linksList.append(link)
-    return linksList
-
 def extractNumerical(txt):
     """
     Extracts a number from a text
@@ -92,9 +84,12 @@ async def getPhotos(page):
     return list(photos)
 
 async def getAddress(page):
-    address = await page.query_selector('[class*="inner-content"]')
-    address = await address.get_attribute('title')
-    return address
+    address_txt = await page.query_selector('[class*="inner-content"]')
+    address_txt = await address_txt.get_attribute('title')
+    address_txt = address_txt.split(': ')[1].split(' ', 1)
+    type = address_txt[0]
+    address = address_txt[1]
+    return type, address
 
 
 async def getInfo(page, link):
@@ -105,11 +100,12 @@ async def getInfo(page, link):
     :return A dictionary containing the information: title, address, url, features, and photos
     """
     try:
-        address = await getAddress(page)
+        type_apartment, address = await getAddress(page)
 
         return { 
             "address": address,
             "url": link,
+            "type_apartment": type_apartment,
             "features": await getFeatures(page),
             "photos": await getPhotos(page)
             }
