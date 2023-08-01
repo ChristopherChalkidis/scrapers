@@ -8,8 +8,9 @@ from datetime import date
 def extractNumerical(txt):
     """
     Extracts a number from a text
-    :param txt (str) string that include a least one number
-    :returns  (int) the first number in the string 
+    parameters:
+        - txt (str) string that include a least one number
+    returns:  (int) the first number in the string 
     """
     num = re.findall("\\d+", txt)
     return int(num[0])
@@ -66,11 +67,9 @@ async def isSmartOnly(page):
     """Return whether the listing is Smart Only (i.e. reserved to view by subscribers)
     :parm {page object} page - The browser page displaying a listing
     """
-    label=  await page.query_selector('[class*="label-premium"]')
+    label=  await page.query_selector('[class="label-premium"]')
     if label:
-        label_txt = await label.inner_text()
-        if "Smart only" in label_txt:
-            return True
+        return True
     return False
 
 async def getPhotos(page, isRestricted= True):
@@ -126,8 +125,8 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    # with open(f"/app/listings/{fileName}", "a") as outfile:
-    with open(f"{fileName}", "a") as outfile: #needed for testing
+    with open(f"/app/listings/{fileName}", "a") as outfile:
+    # with open(f"{fileName}", "a") as outfile: #needed for testing
         outfile.write(json.dumps(listingInfo, indent=4))
 
 scrapeDate = str(date.today())
@@ -184,14 +183,13 @@ async def getListings(page, prope_unrestricted= True):
         if info:
             await writeToFile(info)
 
-    print(len(non_restricted_links))
     if prope_unrestricted:
         await parseUnrestrictedListings(page, non_restricted_links, non_restricted_info)
 
 
 async def main():
     async with async_playwright() as player:
-        browser = await player.chromium.launch(headless=True)
+        browser = await player.chromium.launch(headless=False)
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
             "AppleWebKit/537.36 (KHTML, like Gecko)"
             "Chrome/113.0.0.0 Safari/537.36")
@@ -205,7 +203,6 @@ async def main():
         await page.locator("[id='btnSearchInId']").click()
         await page.wait_for_url('https://directwonen.nl/en/rentals-for-rent/nederland?Recency=today')
         numPages = await getNumPages(page)
-        print(numPages)
 
         await getListings(page, prope_unrestricted=True)
 
