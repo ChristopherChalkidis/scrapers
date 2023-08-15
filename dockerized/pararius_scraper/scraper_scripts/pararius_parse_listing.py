@@ -168,7 +168,7 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    with open(f"app/listings/{fileName}", "a") as outfile:
+    with open(f"/app/listings/{fileName}", "a") as outfile:
         outfile.write(json.dumps(listingInfo, indent=4))
 
 
