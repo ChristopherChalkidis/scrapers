@@ -51,7 +51,6 @@ async def getNumPages(page) -> int:
 
 async def getLinks(link, page) -> set:
     gemeentenLinks = set()
-    print(f"Checking {link}")
     try:
         # await page.route("**/*",excludeResources)
         await page.goto(link)
@@ -61,7 +60,6 @@ async def getLinks(link, page) -> set:
         for link in links:
             source = await link.get_attribute("href")
             if source and len(source) > 50 and "https://www.funda.nl/koop/" in source:
-                # print(f"Adding {source}")
                 gemeentenLinks.add(source)
 
         return gemeentenLinks
