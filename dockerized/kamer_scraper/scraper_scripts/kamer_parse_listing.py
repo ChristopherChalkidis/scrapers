@@ -189,14 +189,14 @@ async def run(link, page):
     except Exception as err:
         print(f"Error {link} {err}")
 
-scrapeDate = str(date.today())
+scrape_date = str(date.today())
 
 
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
-    # Use scrapeDate for live - It is set to today()
+    # Use scrape_date for live - It is set to today()
 
-    links = readFile(f"{scrapeDate}Listings.txt")
+    links = readFile(f"{scrape_date}Listings.txt")
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:
