@@ -167,7 +167,7 @@ async def writeToFile(listingInfo):
 
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    fileName = f"rental--{scrapeDate}--{listingInfo['address']}".replace(
+    fileName = f"rental--{scrape_date}--{listingInfo['address']}".replace(
         ' ', '-')
     if os.path.isfile(f"dockerized/kamer_scraper/scraper_scripts/listings/{fileName}.json"):
         fileName = fileName + " (1)"
