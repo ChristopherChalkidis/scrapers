@@ -151,7 +151,12 @@ async def main():
                     referer="https://google.com/")
                 dailyLinks.append(await getLinks(page))
     allLinks = combineLinkSets(dailyLinks)
-    writeToFile(allLinks)
+    print(f"{len(allLinks)} links found for {scrapeDate}")
 
+    if len(allLinks) == 0:
+        writeToFile([f"No new links found for {scrapeDate}",])
+    else:
+        writeToFile(allLinks)
+        
 if __name__ == "__main__":
     asyncio.run(main())
