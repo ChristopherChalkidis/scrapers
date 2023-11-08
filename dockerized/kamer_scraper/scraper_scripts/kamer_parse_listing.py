@@ -197,6 +197,10 @@ async def main():
     # Use scrape_date for live - It is set to today()
 
     links = readFile(f"{scrape_date}Listings.txt")
+
+    if "No new links" in links:
+        sys.exit(f"No links found")
+        
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:
