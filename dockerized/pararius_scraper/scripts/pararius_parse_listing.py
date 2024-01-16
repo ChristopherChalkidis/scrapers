@@ -3,8 +3,11 @@ from playwright.async_api import async_playwright
 import asyncio
 from playwright_stealth import stealth_async
 from datetime import date
-import os.path
+import string
 
+
+# URL = "https://www.funda.nl/huur/bleiswijk/huis-88443766-van-kinsbergenstraat-11/" #Dutch URL for testing
+# URL = "https://www.funda.nl/en/huur/amsterdam/huis-42085123-cannenburg-15/" #English URL for testing
 
 # *** Methods *** #
 
@@ -27,21 +30,21 @@ def readFile(inputFile: str) -> list:
         print(err)
 
 
-""" async def stillAvailable(page) -> bool:
-    Checks to see if the property displayed on the page is still available for rent or sale
+async def stillAvailable(page) -> bool:
+    """Checks to see if the property displayed on the page is still available for rent or sale
 
     :param {page object} page - The browser page displaying a listing
 
     :return True - If definitief is not a classname on the page, 
     False - If definitief is a classname on the page
-    
+    """
     # Gets the object that contains the status of the listing: new, not available
     selElement = await page.wait_for_selector(
         ".object-header__labels ul li")
     # Gets the class list of the element found
     selClass = await selElement.get_attribute("class")
 
-    return "definitief" not in str(selClass) """
+    return "definitief" not in str(selClass)
 
 
 async def getDetail(elSelector, page) -> str:
@@ -52,23 +55,32 @@ async def getDetail(elSelector, page) -> str:
     :return The text of the element specified
     """
     el = page.locator(elSelector)
+    # print(f"Returning {await el.inner_text()}")
     return await el.inner_text()
 
 
-async def getAddress(elSelector, page) -> str:
-    """ Gets the address string and cleans it
+# async def getFeatures(page) -> list:
+#     """Gets the name and specifics of each detail listed on the page
 
-    :param {string} elSelector - The selector to find the specified element
-    :param {page object} page - The browser page displaying a listing
-    :return The text of the element specified
-    """
+#     :param {page object} page - The browser page displaying a listing
+#     :return A list of small dictionaries of strings of all the details {title: name}
+#     """
+#     allFeatures = []
 
-    el = page.locator(elSelector)
-    txt = await el.inner_text()
-    tmp = txt.split("\n")
-    return f"{tmp[3]} {tmp[1]} {tmp[5]}"
+#     # Selects all dt's that are children of the class
+#     allFeatureTitles = await page.query_selector_all(
+#         ".object-kenmerken-list dt")
 
-# TODO Second section of details under main details.
+#     # Select all dd's that are immediately following a dt
+#     allFeatureDetails = await page.query_selector_all(
+#         ".object-kenmerken-list dt + dd")
+
+#     for i in range(len(allFeatureTitles)):
+#         title = await allFeatureTitles[i].inner_text()
+#         detail = await allFeatureDetails[i].inner_text()
+#         allFeatures.append({title: detail})
+
+#     return allFeatures
 
 
 async def getFeatures(page) -> list:
@@ -77,39 +89,32 @@ async def getFeatures(page) -> list:
     :param {page object} page - The browser page displaying a listing
     :return A list of small dictionaries of strings of all the details {title: name}
     """
-    allFeatures = {}
-    inner = await page.query_selector(".content-inner-wrap")
-    main_details = await inner.query_selector_all(".list-room-details-iconized")
-    extra_details = await inner.query_selector_all(".list-room-details-iconized + .list-room-details li")
-    prop_details = await inner.query_selector_all(".list-room-details-wrap ul li")
-    all_details = extra_details + prop_details
+    allFeatures = []
+    sections = await page.query_selector_all(".page__details")
 
-    for detail in main_details:
-        txt = await detail.inner_text()
-        tmp = txt.split("\n")
-        allFeatures["Price"] = tmp[0]
-        allFeatures["Size"] = tmp[1]
+    for section in sections:
+        heading = await section.query_selector_all(".page__heading")
 
-    for detail in all_details:
-        txt = await detail.inner_text()
-        tmp = txt.split(":\n")
-        allFeatures[tmp[0]] = tmp[1]
+        if heading:
+            heading_title = await heading[0].inner_text()
+            allFeatureTitles = await section.query_selector_all(".listing-features__term")
+            allFeatureDetails = await section.query_selector_all(".listing-features__description")
+
+            for i in range(len(allFeatureTitles)):
+                title = await allFeatureTitles[i].inner_text()
+                detail = await allFeatureDetails[i].inner_text()
+                allFeatures.append({heading_title+"-"+title: detail})
 
     return allFeatures
 
 
-async def getDescription(page):
-    """Checks to see if there is a description available on the page and returns it if there is
-
-    :param {page object} page - The browser page displaying a listing
-
-    :return A string containing the description of the house or "N/A" if no description available
-"""
-    try:
-        desc = page.locator(".room-description")
-        return await desc.inner_text()
-    except Exception as err:
-        return f"Description {err}"
+async def get_noscript(txt):
+    split_str = await txt.inner_html()
+    links = set()
+    for i in str(split_str).strip().split(" "):
+        if "https://casco-media-prod.global.ssl.fastly.net" in i:
+            links.add(i[i.find('http'):])
+    return links
 
 
 async def getPhotos(page) -> list:
@@ -119,10 +124,17 @@ async def getPhotos(page) -> list:
 
     :return A list containing the src to all the photos of the current listing"""
     photos = set()
-    images = await page.query_selector_all("#slider a img")
+    images = await page.query_selector_all(".picture--media-carrousel picture img")
 
+    noscript_links = await page.query_selector("noscript")
+    image_links = await get_noscript(noscript_links)
+    for image in image_links:
+        photos.add(image)
     for i in range(len(images)):
-        photos.add(await images[i].get_attribute("src"))
+        imageSRC = await images[i].get_attribute("src")
+        # Checks to see if it is one of the listing photos
+        if "https://casco-media-prod.global.ssl.fastly.net" in imageSRC:
+            photos.add(imageSRC)
 
     return list(photos)
 
@@ -136,18 +148,16 @@ async def getInfo(page) -> dict:
     """
     try:
 
-        await page.wait_for_selector("h1", timeout=5000)
-        obj = {
+        await page.wait_for_selector(".listing-detail-summary__title", timeout=5000)
+        return {
             "title": await getDetail(
-                "h1", page),
-            "address": await getAddress(
-                ".room-locatie .list-room-details:has-text('Straat: ')", page),
+                ".listing-detail-summary__title", page),
+            "address": await getDetail(
+                ".listing-detail-summary__location", page),
             "url": page.url,
-            "features": await getFeatures(page),
-            "description": await getDescription(page),
+            # "features": await getFeatures(page),
             "photos": await getPhotos(page)
         }
-        return obj
     except Exception as err:
         print(f"Couldn't find title {page.url} - {err}")
 
@@ -158,22 +168,19 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-
     with open(f"/app/listings/{fileName}", "a") as outfile:
         outfile.write(json.dumps(listingInfo, indent=4))
 
 
 async def writeToFile(listingInfo):
-    """Checks to see if the listing is a duplicate name and sets the filename accordingly
+    """Checks to see if the listing is a rental or a sale and sets the filename accordingly
 
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
-    fileName = f"rental--{scrape_date}--{listingInfo['address']}".replace(
-        ' ', '-')
-    if os.path.isfile(f"dockerized/kamer_scraper/scraper_scripts/listings/{fileName}.json"):
-        fileName = fileName + " (1)"
 
-    await writeJson(f"{fileName}.json", listingInfo)
+    fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
+
+    await writeJson(fileName.replace("/", "-"), listingInfo)
 
 
 async def run(link, page):
@@ -184,24 +191,24 @@ async def run(link, page):
     """
     try:
         await page.goto(link, wait_until="domcontentloaded", referer="https://www.google.com")
+        # await page.screenshot(path="screenshot.png")
         info = await getInfo(page)
         if info:
             await writeToFile(info)
     except Exception as err:
         print(f"Error {link} {err}")
 
-scrape_date = str(date.today())
+# COMPLETE Research #6 https://www.zenrows.com/blog/web-scraping-without-getting-blocked#why-is-web-scraping-not-allowed
+# COMPLETE set sec-ch-ua to match user-agent
+# COMPLETE look at asyncio gather tasks for concurrency - https://www.zenrows.com/blog/speed-up-web-scraping-with-concurrency-in-python
+scrapeDate = str(date.today())
 
 
 async def main():
     """Reads the list of all the sales and rental links for each gemeenten"""
-    # Use scrape_date for live - It is set to today()
+    # Use scrapeDate for live - It is set to today()
 
-    links = readFile(f"{scrape_date}Listings.txt")
-
-    if "No new links" in links:
-        sys.exit(f"No links found")
-
+    links = readFile(f"{scrapeDate}Listings.txt")
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:

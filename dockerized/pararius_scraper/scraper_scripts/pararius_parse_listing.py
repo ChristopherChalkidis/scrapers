@@ -166,7 +166,7 @@ async def run(link, page):
     """
     try:
         await page.goto(link, wait_until="domcontentloaded", referer="https://www.google.com")
-        await page.screenshot(path="screenshot.png")
+        # await page.screenshot(path="screenshot.png")
         info = await getInfo(page)
         if info:
             await writeToFile(info)

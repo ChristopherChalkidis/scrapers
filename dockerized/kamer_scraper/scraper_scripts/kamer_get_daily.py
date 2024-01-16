@@ -1,4 +1,5 @@
 import json
+
 import re
 import math
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
@@ -35,32 +36,6 @@ async def readFile(file) -> list:
     with open(file, "r") as file:
         data = json.load(file)
     return data
-
-
-""" async def notifyCaptcha(page, selector, take_screenshot=False):
-    """
-"""    Check whether a CAPTCHA challenge appears in the page while waiting for selector.
-        Parameters
-            page:
-            selector (str):
-            take_screenshot (bool) [optional]: take a screenshot to verify that whether a CAPTCHA appeared. 
-        Returns: Null
-        Throws exceptions if timed out 
-
-    try:
-        await page.wait_for_selector(selector, timeout=5000)
-    except PlaywrightTimeoutError:
-        is_captacha = await page.is_visible("#_csnl_cp")
-
-        if take_screenshot:
-            await page.screenshot(path="captcha_screenshot.png")
-
-        if is_captacha:
-            raise Exception("Timed out because of a CAPTCHA challenge.")
-        else:
-            raise Exception("Timed out for unknown reason.")
- """
-
 
 async def getNumPages(page) -> int:
     try:
@@ -108,7 +83,7 @@ scrapeDate = str(date.today())
 
 def writeToFile(links):
     try:
-        with open(f"{scrapeDate}Listings.txt", "w") as outfile:
+        with open(f"/app/listings/{scrape_date}Listings.txt", "w") as outfile:
             for link in links:
                 outfile.write(link+"\n")
         print("File write successful!")
@@ -156,8 +131,8 @@ async def main():
             '--use-mock-keychain',
             '--hide-scrollbars',
             '--mute-audio'
-        ]
-        browser = await player.chromium.launch(headless=False, args=browser_args)
+      
+        browser = await player.chromium.launch(headless=True, args=browser_args)
         # User agent must be set for stealth mode so the captcha isn't triggered in headless mode.
         ua = ("Mozilla/5.0 (X11; Linux x86_64)"
               "AppleWebKit/537.36 (KHTML, like Gecko)"
@@ -176,7 +151,13 @@ async def main():
                     referer="https://google.com/")
                 dailyLinks.append(await getLinks(page))
     allLinks = combineLinkSets(dailyLinks)
-    writeToFile(allLinks)
+
+    print(f"{len(allLinks)} links found for {scrapeDate}")
+
+    if len(allLinks) == 0:
+        writeToFile([f"No new links found for {scrapeDate}",])
+    else:
+        writeToFile(allLinks)
 
 if __name__ == "__main__":
     asyncio.run(main())
