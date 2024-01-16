@@ -4,6 +4,12 @@ FROM mcr.microsoft.com/playwright/python:v1.27.1-jammy
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
 
+#Install required system packages (including gcc and python3-dev)
+RUN apt-get update \
+&& apt-get install -y gcc python3-dev \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 

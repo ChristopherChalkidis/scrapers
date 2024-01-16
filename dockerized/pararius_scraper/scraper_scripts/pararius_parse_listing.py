@@ -55,32 +55,7 @@ async def getDetail(elSelector, page) -> str:
     :return The text of the element specified
     """
     el = page.locator(elSelector)
-    # print(f"Returning {await el.inner_text()}")
     return await el.inner_text()
-
-
-# async def getFeatures(page) -> list:
-#     """Gets the name and specifics of each detail listed on the page
-
-#     :param {page object} page - The browser page displaying a listing
-#     :return A list of small dictionaries of strings of all the details {title: name}
-#     """
-#     allFeatures = []
-
-#     # Selects all dt's that are children of the class
-#     allFeatureTitles = await page.query_selector_all(
-#         ".object-kenmerken-list dt")
-
-#     # Select all dd's that are immediately following a dt
-#     allFeatureDetails = await page.query_selector_all(
-#         ".object-kenmerken-list dt + dd")
-
-#     for i in range(len(allFeatureTitles)):
-#         title = await allFeatureTitles[i].inner_text()
-#         detail = await allFeatureDetails[i].inner_text()
-#         allFeatures.append({title: detail})
-
-#     return allFeatures
 
 
 async def getFeatures(page) -> list:
@@ -178,10 +153,7 @@ async def writeToFile(listingInfo):
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
 
-    # if await isRental(listingInfo):
     fileName = f"rental--{scrapeDate}--{listingInfo['address']}.json"
-    # else:
-    # fileName = f"sale--{scrapeDate}--{listingInfo['address']}.json"
 
     await writeJson(fileName.replace("/", "-"), listingInfo)
 
@@ -201,9 +173,6 @@ async def run(link, page):
     except Exception as err:
         print(f"Error {link} {err}")
 
-# COMPLETE Research #6 https://www.zenrows.com/blog/web-scraping-without-getting-blocked#why-is-web-scraping-not-allowed
-# COMPLETE set sec-ch-ua to match user-agent
-# COMPLETE look at asyncio gather tasks for concurrency - https://www.zenrows.com/blog/speed-up-web-scraping-with-concurrency-in-python
 scrapeDate = str(date.today())
 
 

@@ -158,6 +158,7 @@ async def writeJson(fileName, listingInfo):
     :param {string} fileName - The string containing the name the file will receive
     :param {dict} listingInfo - A dictionary containing all the information for each listing
     """
+
     with open(f"/app/listings/{fileName}", "a") as outfile:
         outfile.write(json.dumps(listingInfo, indent=4))
 
@@ -200,7 +201,7 @@ async def main():
 
     if "No new links" in links:
         sys.exit(f"No links found")
-        
+
     dailyURLs = links.splitlines()
 
     async with async_playwright() as player:

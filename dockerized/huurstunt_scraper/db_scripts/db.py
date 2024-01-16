@@ -1,5 +1,5 @@
 import sqlite3
-
+# import os
 
 def get_db(database_file: str):
     """
@@ -9,9 +9,8 @@ def get_db(database_file: str):
         Returns: 
             db: a connection to the database
     """
-    db = sqlite3.connect(database_file)
+    db = sqlite3.connect(database_file) 
     return db
-
 
 def init_db(db, schema_file: str):
     """
@@ -26,12 +25,13 @@ def init_db(db, schema_file: str):
         c = db.cursor()
         c.executescript(f.read())
 
-
 if __name__ == "__main__":
-    database_file = "properties.db"
-    schema_file = "schema.sql"
+    # # For portability, we obtain the absolute path to the script
+    # dirname = os.path.dirname(os.path.abspath(__file__))
+    database_file = "/app/database/properties.db"
+    schema_file = "/app/db_scripts/schema.sql"
 
-    db = get_db(database_file)
+    db= get_db(database_file)
     init_db(db, schema_file)
     db.commit()
     db.close()
