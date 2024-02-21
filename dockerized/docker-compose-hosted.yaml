@@ -4,8 +4,8 @@ services:
     image: funda_scrapper-image
     container_name: funda_scrapper-container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/database
+      - funda-database:/app/database 
+      - funda-listings:/app/listings
     ports:
       - "8080:3000"
   pararius_scraper:
@@ -13,57 +13,57 @@ services:
     image: pararius_scraper_image
     container_name: pararius_scraper_container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/database
+      - pararius-listings:/app/listings
+      - pararius-database:/app/database
     ports:
-     - "8000:3010"
+     - "8000:3030"
 
   huurstunt_scraper:
     build: ./huurstunt_scraper
     image: huurstunt_scraper_image
     container_name: huurstunt_scraper_container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/database
+      - huurstunt-listings:/app/listings
+      - huurstunt-database:/app/database
     ports:
-      - "8000:3020"
+      - "8000:3060"
   kamer_scraper:
     build: ./kamer_scraper
     image: kamer_scraper_image
     container_name: kamer_scraper_container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/databasee
+      - kamer-listings:/app/listings
+      - kamer-database:/app/database
     ports:
-      - "8000:3030"
+      - "8000:3090"
 
   kamernet_scraper:
     build: ./kamernet_scraper
     image: kamernet_scraper_image
     container_name: kamernet_scraper_container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/database
+      - kamernet-listings:/app/listings
+      - kamernet-database:/app/database
     ports:
-     - "8000:3040"
+     - "8000:3060"
   huurwoningen_scraper:
     build: ./huurwoningen_scraper
     image: huurwoningen_scraper_image
     container_name: huurwoningen_scraper_container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/database
+      - huurwoningen-listings:/app/listings
+      - huurwoningen-database:/app/database
     ports:
-     - "8000:3050"
+     - "8000:3080"
   directwonen_scraper:
     build: ./directwonen_scraper
     image: directwonen_scraper_image
     container_name: directwonen_scraper_container
     volumes:
-      - shared-listings:/app/listings
-      - shared-database:/app/database
+      - directwonen-listings:/app/listings
+      - directwonen-database:/app/database
     ports:
-     - "8000:3060"
+     - "8000:3090"
 
 
 # This should remain unchanged
@@ -83,5 +83,18 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
-  shared-listings:
-  shared-database:
+  funda-listings:
+  funda-database:
+  pararius-listings:
+  pararius-database:
+  display-information:
+  huurstunt-listings:
+  huurstunt-database:
+  kamer-listings:
+  kamer-database:
+  kamernet-listings:
+  kamernet-database:
+  huurwoningen-listings:
+  huurwoningen-database:
+  directwonen-listings:
+  directwonen-database:
