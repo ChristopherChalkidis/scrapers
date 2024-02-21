@@ -78,6 +78,7 @@ services:
       - huurwoningen_scraper
       - directwonen_scraper
       - huurstunt_scraper
+      - kamer_scraper
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
