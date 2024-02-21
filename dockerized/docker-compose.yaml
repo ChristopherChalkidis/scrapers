@@ -7,7 +7,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/database
     ports:
-      - "8080:3000"
+      - "8000:3000"
   pararius_scraper:
     build: ./pararius_scraper
     image: pararius_scraper_image
@@ -16,7 +16,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/database
     ports:
-     - "8000:3010"
+     - "8001:3010"
 
   huurstunt_scraper:
     build: ./huurstunt_scraper
@@ -26,7 +26,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/database
     ports:
-      - "8000:3020"
+      - "8002:3020"
   kamer_scraper:
     build: ./kamer_scraper
     image: kamer_scraper_image
@@ -35,7 +35,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/databasee
     ports:
-      - "8000:3030"
+      - "8003:3030"
 
   kamernet_scraper:
     build: ./kamernet_scraper
@@ -45,7 +45,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/database
     ports:
-     - "8000:3040"
+     - "8004:3040"
   huurwoningen_scraper:
     build: ./huurwoningen_scraper
     image: huurwoningen_scraper_image
@@ -54,7 +54,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/database
     ports:
-     - "8000:3050"
+     - "8005:3050"
   directwonen_scraper:
     build: ./directwonen_scraper
     image: directwonen_scraper_image
@@ -63,7 +63,7 @@ services:
       - shared-listings:/app/listings
       - shared-database:/app/database
     ports:
-     - "8000:3060"
+     - "8006:3060"
 
 
 # This should remain unchanged
